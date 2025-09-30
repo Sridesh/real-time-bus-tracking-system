@@ -1,0 +1,15 @@
+{
+  "name": "real-time-bus-tracking-system",
+  "version": "1.0.0",
+  "description": "A REST API based real-time bus tracking system with features including, bus registration, route management and real-time location update.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^5.1.0"
+  }
+}
