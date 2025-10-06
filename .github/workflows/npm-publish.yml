@@ -16,7 +16,6 @@ jobs:
         with:
           node-version: 20
       - run: npm ci
-      # - run: npm test
         env: 
           MONGO_CONNECTION_URI: ${{secrets.MONGO_CONNECTION_URI}}
 
