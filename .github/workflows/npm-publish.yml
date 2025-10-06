@@ -4,6 +4,9 @@
 name: Node.js Package
 
 on:
+  push:
+    branches:
+      - main
   release:
     types: [created]
 
@@ -17,5 +20,5 @@ jobs:
           node-version: 20
       - run: npm ci
         env: 
-          MONGO_CONNECTION_URI: ${{secrets.MONGO_CONNECTION_URI}}
-      - run: pm2 restart api
+          MONGO_CONNECTION_URI: ${{ secrets.MONGO_CONNECTION_URI }}
+
