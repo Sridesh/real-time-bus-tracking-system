@@ -10,9 +10,6 @@ on:
 jobs:
   build:
     runs-on: self-hosted
-    strategy:
-      matrix:
-        node-version: [20.x0]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -20,10 +17,12 @@ jobs:
           node-version: 20
       - run: npm ci
       - run: npm test
+        env: 
+          MONGO_CONNECTION_URI: ${{secrets.MONGO_CONNECTION_URI}}
 
   publish-npm:
     needs: build
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -33,4 +32,4 @@ jobs:
       - run: npm ci
       - run: npm publish
         env:
-          MONGO_CONNECTION_URI: ${{secrets.MONGO_CONNECTION_URI}}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
