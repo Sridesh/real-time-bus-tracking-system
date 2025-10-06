@@ -37,11 +37,11 @@ const busSchema = new mongoose.Schema(
       type: String,
       trim: true,
     },
-    yearManufactured: {
-      type: Number,
-      min: 1990,
-      max: new Date().getFullYear(),
-    },
+    // yearManufactured: {
+    //   type: Number,
+    //   min: 1990,
+    //   max: new Date().getFullYear(),
+    // },
     features: {
       type: [String],
       default: [],
