@@ -2,7 +2,6 @@ const express = require('express');
 const swaggerUI = require('swagger-ui-express');
 const swaggerSpecs = require('./config/swagger.config');
 const routes = require('./routes');
-const logger = require('./config/logger.config');
 
 const app = express();
 
