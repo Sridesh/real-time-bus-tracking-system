@@ -5,6 +5,9 @@ const routes = require('./routes');
 
 const app = express();
 
+// middleware
+app.use(express.json());
+
 // swagger docs
 app.use('/docs', swaggerUI.serve, swaggerUI.setup(swaggerSpecs));
 
