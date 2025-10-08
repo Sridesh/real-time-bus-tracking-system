@@ -16,6 +16,31 @@ const router = express.Router();
  *   post:
  *     summary: User signup
  *     tags: [Authentication]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - phone_number
+ *               - password
+ *               - role
+ *             properties:
+ *               phone_number:
+ *                 type: string
+ *                 example: "0771234567"
+ *               password:
+ *                 type: string
+ *                 format: password
+ *               role:
+ *                 type: string
+ *                 enum: [commuter, admin, operator]
+ *               name:
+ *                 type: string
+ *               email:
+ *                 type: string
+ *                 format: email
  *     responses:
  *       201:
  *         description: User created successfully
@@ -24,20 +49,16 @@ const router = express.Router();
  *             schema:
  *               type: object
  *               properties:
- *                  phone_number:
- *                      type: number
- *                      format: email
- *                  password:
- *                      type: string
- *                      format: password
+ *                 message:
+ *                   type: string
+ *                   example: User created successfully
+ *                 userId:
+ *                   type: string
+ *                   example: 60c72b2f9b1e8e6f88e7e1b2
+ *       400:
+ *         description: User creation failed
  */
-router.post('/signup', (req, res) => {
-  console.log(req.body);
-
-  res.send({
-    message: ['Hello'],
-  });
-});
+router.post('/signup', authController.signup);
 
 /**
  * @swagger
