@@ -112,22 +112,6 @@ busSchema.virtual('locationHistory', {
 });
 
 /**
- * Virtual field - Age of bus (in years)
- */
-busSchema.virtual('age').get(function () {
-  if (!this.yearManufactured) return null;
-  return new Date().getFullYear() - this.yearManufactured;
-});
-
-/**
- * Virtual field - Is maintenance due
- */
-busSchema.virtual('isMaintenanceDue').get(function () {
-  if (!this.nextMaintenanceDate) return false;
-  return new Date() >= this.nextMaintenanceDate;
-});
-
-/**
  * Virtual field - Is license expired
  */
 busSchema.virtual('isLicenseExpired').get(function () {
@@ -147,20 +131,7 @@ busSchema.virtual('isInsuranceExpired').get(function () {
  * Instance method - Check if bus is operational
  */
 busSchema.methods.isOperational = function () {
-  return (
-    this.status === 'active' &&
-    !this.isMaintenanceDue &&
-    !this.isLicenseExpired &&
-    !this.isInsuranceExpired
-  );
-};
-
-/**
- * Instance method - Update odometer
- */
-busSchema.methods.updateOdometer = async function (distance) {
-  this.odometer += distance;
-  await this.save();
+  return this.status === 'active' && !this.isLicenseExpired && !this.isInsuranceExpired;
 };
 
 /**
@@ -195,16 +166,6 @@ busSchema.statics.findByRoute = function (routeId, activeOnly = true) {
   const query = { routeId };
   if (activeOnly) query.status = 'active';
   return this.find(query).populate('operatorId', 'name contactPerson');
-};
-
-/**
- * Static method - Find buses needing maintenance
- */
-busSchema.statics.findMaintenanceDue = function () {
-  return this.find({
-    nextMaintenanceDate: { $lte: new Date() },
-    status: { $ne: 'maintenance' },
-  });
 };
 
 /**
