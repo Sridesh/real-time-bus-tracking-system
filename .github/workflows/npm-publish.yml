@@ -27,7 +27,7 @@ jobs:
           REFRESH_TOKEN_EXPIRE: ${{secrets.REFRESH_TOKEN_EXPIRE}}
           ACCESS_TOKEN_EXPIRE: ${{secrets.ACCESS_TOKEN_EXPIRE}}
           REDIS_URL: ${{secrets.REDIS_URL}}
-          
+      - run : pm2 restart api
           
           
           
