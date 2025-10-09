@@ -1,46 +1,47 @@
 const mongoose = require('mongoose');
 const validator = require('validator');
 const bcrypt = require('bcrypt');
+const roles = require('../utils/roles');
 
 const userSchema = mongoose.Schema(
   {
-    phone_number: {
+    email: {
       type: String,
-      trim: true,
       unique: true,
-      required: [true, 'phone number is required'],
+      lowercase: true,
+      trim: true,
+      required: [true, 'email number is required'],
       validate: {
         validator: (val) => {
-          return /^\d{10}$/.test(val); // only 10 digits
+          return validator.isEmail(val);
         },
-        message: (props) => `${props.value} is not a valid phone number`,
+        message: (props) => `${props.value} is not a valid email`,
       },
     },
     passwordHash: {
       type: String,
       required: [true, 'Password is required'],
       minlength: [8, 'Password must be at least 8 characters'],
-      select: false,
+      // select: false,
     },
     role: {
       type: String,
       enum: {
-        values: ['admin', 'operator', 'commuter'],
+        values: [roles.ADMIN, roles.OPERATOR, roles.COMMUTER],
         message: '{VALUE} is not a valid role',
       },
       required: [true, 'role is required'],
-      default: 'commuter',
+      default: roles.COMMUTER,
     },
-    email: {
+    phone_number: {
       type: String,
-      unique: true,
-      lowercase: true,
       trim: true,
+      unique: true,
       validate: {
         validator: (val) => {
-          return validator.isEmail(val);
+          return /^\d{10}$/.test(val); // only 10 digits
         },
-        message: (props) => `${props.value} is not a valid email`,
+        message: (props) => `${props.value} is not a valid phone number`,
       },
     },
     name: { type: String, lowercase: true, trim: true },
