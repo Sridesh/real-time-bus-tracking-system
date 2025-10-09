@@ -1,5 +1,7 @@
 const express = require('express');
+
 const authController = require('../../controllers/auth.controllers');
+const { loginRateLimiter } = require('../../middleware/rateLimiter.middleware');
 
 const router = express.Router();
 
@@ -94,7 +96,7 @@ router.post('/signup', authController.signup);
  *       400:
  *         description: Login failed
  */
-router.post('/login', authController.login);
+router.post('/login', loginRateLimiter, authController.login);
 
 /**
  * @swagger
