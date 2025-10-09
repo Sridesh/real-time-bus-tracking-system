@@ -28,7 +28,7 @@ const router = express.Router();
  */
 router.get('/', authenticate, requireRoles(['admin']), (req, res) => {
   res.send({
-    message: ['Hello'],
+    message: ['Helloooooo'],
   });
 });
 
