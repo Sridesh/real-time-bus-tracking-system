@@ -22,4 +22,13 @@ jobs:
         env: 
           MONGO_CONNECTION_URI: ${{ secrets.MONGO_CONNECTION_URI }}
           BASE_URL: ${{secrets.BASE_URL}}
+          JWT_ACCESS_SECRET: ${{secrets.JWT_ACCESS_SECRET}}
+          JWT_REFRESH_SECRET: ${{secrets.JWT_REFRESH_SECRET}}
+          REFRESH_TOKEN_EXPIRE: ${{secrets.REFRESH_TOKEN_EXPIRE}}
+          ACCESS_TOKEN_EXPIRE: ${{secrets.ACCESS_TOKEN_EXPIRE}}
+          REDIS_URL: ${{secrets.REDIS_URL}}
+          
+          
+          
+          
 
