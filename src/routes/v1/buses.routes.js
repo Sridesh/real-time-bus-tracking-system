@@ -1,4 +1,6 @@
 const express = require('express');
+const requireRoles = require('../../middleware/rbac.middleware');
+const authenticate = require('../../middleware/authenticate.middleware');
 const router = express.Router();
 
 /**
@@ -24,7 +26,7 @@ const router = express.Router();
  *               items:
  *                 type: string
  */
-router.get('/', (req, res) => {
+router.get('/', authenticate, requireRoles(['admin']), (req, res) => {
   res.send({
     message: ['Hello'],
   });

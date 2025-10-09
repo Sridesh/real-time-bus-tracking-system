@@ -66,6 +66,22 @@ router.post('/signup', authController.signup);
  *   post:
  *     summary: User login
  *     tags: [Authentication]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *               - password
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *               password:
+ *                 type: string
+ *                 format: password
  *     responses:
  *       201:
  *         description: User created successfully
@@ -75,24 +91,72 @@ router.post('/signup', authController.signup);
  *               type: array
  *               items:
  *                 type: string
+ *       400:
+ *         description: Login failed
  */
 router.post('/login', authController.login);
 
 /**
  * @swagger
- * /auth/logout:
+ * /auth/refresh:
  *   post:
- *     summary: User logout
+ *     summary: Refresh token rotation
  *     tags: [Authentication]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - refresh_token
+ *             properties:
+ *               refreshToken:
+ *                 type: string
  *     responses:
- *       201:
- *         description: User created successfully
+ *       200:
+ *         description: Token refreshed
  *         content:
  *           application/json:
  *             schema:
- *               type: array
- *               items:
+ *               type: object
+ *               properties:
+ *                  refreshToken:
+ *                      type: string
+ *       401:
+ *         description: Could not refresh
+ */
+router.post('/refresh', authController.refreshToken);
+
+/**
+ * @swagger
+ * /auth/logout:
+ *   post:
+ *     summary: Logout user
+ *     tags: [Authentication]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - refresh_token
+ *             properties:
+ *               refresh_token:
  *                 type: string
+ *     responses:
+ *       200:
+ *         description: Token refreshed
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                  message:
+ *                      type: string
+ *       500:
+ *         description: Logout failed
  */
 router.post('/logout', authController.logout);
 
