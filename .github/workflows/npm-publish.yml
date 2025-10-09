@@ -41,7 +41,7 @@ jobs:
           echo "ACCESS_TOKEN_EXPIRE=${{ secrets.ACCESS_TOKEN_EXPIRE }}" >> .env
           echo "REDIS_URL=${{ secrets.REDIS_URL }}" >> .env
       
-      - run: pm2 restart api
+      - run: pm2 restart server
           
           
 
