@@ -10,6 +10,9 @@ const { commonRateLimiter } = require('./middleware/rateLimiter.middleware');
 
 const app = express();
 
+//trust nginx proxy
+app.set('trust proxy', 1);
+
 // redis
 const connectRedis = async () => {
   await redisService.connect();
