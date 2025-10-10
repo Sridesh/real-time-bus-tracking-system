@@ -10,29 +10,29 @@ const busSchema = new mongoose.Schema(
       required: [true, 'Registration number is required'],
       unique: true,
       trim: true,
-      uppercase: true,
+      lowercase: true,
       // match: [
       //   /^[A-Z]{2}-[A-Z]{3}-\d{4}$/,
-      //   'Registration must be in format: XX-XXX-XXXX (e.g., WP-CAB-1234)',
+      //   'Registration must be in format: XX-XXX-XXXX',
       // ],
     },
-    // operatorId: {
-    //   type: mongoose.Schema.Types.ObjectId,
-    //   ref: 'Operator',
-    //   required: [true, 'Operator ID is required'],
-    //   index: true,
-    // },
-    // routeId: {
-    //   type: mongoose.Schema.Types.ObjectId,
-    //   ref: 'Route',
-    //   default: null,
-    //   index: true,
-    // },
+    operatorId: {
+      type: [mongoose.Schema.Types.ObjectId],
+      ref: 'Operator',
+      required: [true, 'Operator ID is required'],
+      index: true,
+    },
+    routeId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Route',
+      default: null,
+      index: true,
+    },
     capacity: {
       type: Number,
       required: [true, 'Capacity is required'],
-      min: [10, 'Capacity must be at least 10'],
-      max: [100, 'Capacity cannot exceed 100'],
+      min: [30, 'Capacity must be at least 10'],
+      max: [70, 'Capacity cannot exceed 100'],
     },
     status: {
       type: String,
@@ -52,30 +52,32 @@ const busSchema = new mongoose.Schema(
       type: String,
       trim: true,
       enum: {
-        values: ['Ashok Leyland', 'TATA', 'Rosa', 'Isuzu'],
+        values: ['Ashok Leyland', 'TATA', 'Rosa'],
         message: '{VALUE} is not a supported manufacturer',
       },
       default: 'Other',
     },
-    yearManufactured: {
-      type: Number,
-      min: [1990, 'Year must be 1990 or later'],
-      max: [new Date().getFullYear(), 'Year cannot be in the future'],
+    features: {
+      type: [String],
+      default: [],
+      enum: {
+        values: ['AC', 'WiFi', 'Television', 'Music', 'Reclining Seats', 'Entertainment System'],
+        message: '{VALUE} is not a valid feature',
+      },
     },
-    fuelType: {
-      type: String,
-      enum: ['Diesel', 'Petrol', 'Electric', 'Hybrid', 'CNG'],
-      default: 'Diesel',
-    },
-    licensePlateExpiry: {
-      type: Date,
-    },
-    insuranceExpiry: {
-      type: Date,
-    },
+    // licensePlateExpiry: {
+    //   type: Date,
+    // },
+    // insuranceExpiry: {
+    //   type: Date,
+    // },
     isTracking: {
       type: Boolean,
-      default: false, // Whether GPS tracking is currently active
+      default: false,
+    },
+    isRunning: {
+      type: Boolean,
+      default: false,
     },
   },
   {
@@ -85,14 +87,14 @@ const busSchema = new mongoose.Schema(
   }
 );
 
-// Compound indexes for common queries
+// indexes
 busSchema.index({ registrationNumber: 1 }, { unique: true });
-// busSchema.index({ operatorId: 1, status: 1 });
-// busSchema.index({ routeId: 1, status: 1 });
+busSchema.index({ operatorId: 1, status: 1 });
+busSchema.index({ routeId: 1, status: 1 });
 busSchema.index({ status: 1, isTracking: 1 });
 
 /**
- * Virtual field - Current location (most recent)
+ * Virtual fields
  */
 busSchema.virtual('currentLocation', {
   ref: 'Location',
@@ -102,42 +104,34 @@ busSchema.virtual('currentLocation', {
   options: { sort: { timestamp: -1 } }, // Get most recent
 });
 
-/**
- * Virtual field - Location history
- */
 busSchema.virtual('locationHistory', {
   ref: 'Location',
   localField: '_id',
   foreignField: 'busId',
 });
 
-/**
- * Virtual field - Is license expired
- */
-busSchema.virtual('isLicenseExpired').get(function () {
-  if (!this.licensePlateExpiry) return false;
-  return new Date() >= this.licensePlateExpiry;
-});
+// busSchema.virtual('isLicenseExpired').get(function () {
+//   if (!this.licensePlateExpiry) return false;
+//   return new Date() >= this.licensePlateExpiry;
+// });
 
-/**
- * Virtual field - Is insurance expired
- */
-busSchema.virtual('isInsuranceExpired').get(function () {
-  if (!this.insuranceExpiry) return false;
-  return new Date() >= this.insuranceExpiry;
-});
+// busSchema.virtual('isInsuranceExpired').get(function () {
+//   if (!this.insuranceExpiry) return false;
+//   return new Date() >= this.insuranceExpiry;
+// });
 
 /**
  * Instance method - Check if bus is operational
  */
-busSchema.methods.isOperational = function () {
-  return this.status === 'active' && !this.isLicenseExpired && !this.isInsuranceExpired;
-};
+// busSchema.methods.isOperational = function () {
+//   return this.status === 'active' && !this.isLicenseExpired && !this.isInsuranceExpired;
+// };
 
 /**
  * Instance method - Start tracking
  */
-busSchema.methods.startTracking = async function () {
+busSchema.methods.startRunning = async function () {
+  this.isRunning = true;
   this.isTracking = true;
   await this.save();
 };
@@ -145,7 +139,8 @@ busSchema.methods.startTracking = async function () {
 /**
  * Instance method - Stop tracking
  */
-busSchema.methods.stopTracking = async function () {
+busSchema.methods.stopRunning = async function () {
+  this.isRunning = false;
   this.isTracking = false;
   await this.save();
 };
@@ -176,15 +171,11 @@ busSchema.statics.findActiveTracking = function () {
 };
 
 /**
- * Pre-save middleware - Update maintenance status
+ * Static method - Find active tracking buses
  */
-busSchema.pre('save', function (next) {
-  // Automatically set status to maintenance if maintenance is due
-  if (this.isMaintenanceDue && this.status === 'active') {
-    this.status = 'maintenance';
-  }
-  next();
-});
+busSchema.statics.findRunningBuses = function () {
+  return this.find({ isRunning: true, status: 'active' });
+};
 
 /**
  * Pre-remove middleware - Clean up related location data

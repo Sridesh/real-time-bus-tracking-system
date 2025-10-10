@@ -1,5 +1,5 @@
 const express = require('express');
-const busesRoutes = require('./v1/buses.routes');
+const busesRoutes = require('./v1/bus.routes');
 const authRoutes = require('./v1/auth.routes');
 
 const router = express.Router();
