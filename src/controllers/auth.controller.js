@@ -34,8 +34,6 @@ const login = async (req, res) => {
     const ok = await bcrypt.compare(password, user.passwordHash);
     if (!ok) return res.status(401).json({ message: 'Invalid credentials' });
 
-    console.log(user);
-
     const { token: accessToken } = await jwtService.generateAccessToken(user);
     const { token: refreshToken } = await jwtService.generateRefreshToken(user);
 
@@ -75,7 +73,6 @@ const refreshToken = async (req, res) => {
 
 const logout = async (req, res) => {
   const { refresh_token } = req.body;
-  console.log(refresh_token);
 
   try {
     const payload = jwtService.verifyRefreshToken(refresh_token, process.env.JWT_REFRESH_SECRET);
