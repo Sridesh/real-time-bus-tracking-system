@@ -127,12 +127,16 @@ class BusService {
    * @returns {Promise<void>}
    */
   async deleteBus(busId, user) {
+    console.log('service', busId);
+
     if (!this.isValidObjectId(busId)) {
       throw new ApiError(400, 'Invalid bus ID format');
     }
 
     // Get existing bus
     const existingBus = await busRepository.findById(busId);
+    console.log(busId);
+
     if (!existingBus) {
       throw new ApiError(404, 'Bus not found');
     }
