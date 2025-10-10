@@ -134,7 +134,7 @@ class JwtService {
         throw new Error('Refresh token has expired');
       }
       if (error.name === 'JsonWebTokenError') {
-        throw new Error('Invalid refresh token');
+        throw new Error('Invalid or expired refresh token');
       }
       throw new Error('Token verification failed');
     }

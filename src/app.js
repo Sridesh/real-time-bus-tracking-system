@@ -6,6 +6,7 @@ const swaggerUI = require('swagger-ui-express');
 const swaggerSpecs = require('./config/swagger.config');
 const routes = require('./routes');
 const redisService = require('./services/redis.service');
+const { commonRateLimiter } = require('./middleware/rateLimiter.middleware');
 
 const app = express();
 
@@ -17,6 +18,7 @@ connectRedis();
 
 // middleware
 app.use(express.json());
+app.use(commonRateLimiter); // rate limiter
 
 // swagger docs
 app.use('/docs', swaggerUI.serve, swaggerUI.setup(swaggerSpecs));
