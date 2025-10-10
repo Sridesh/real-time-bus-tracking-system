@@ -26,9 +26,9 @@ const router = express.Router();
  *               items:
  *                 type: string
  */
-router.get('/', authenticate, requireRoles(['admin']), (req, res) => {
+router.get('/', (req, res) => {
   res.send({
-    message: ['Hello'],
+    message: ['Helloooooo'],
   });
 });
 

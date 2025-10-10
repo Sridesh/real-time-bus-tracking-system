@@ -13,13 +13,35 @@ on:
 jobs:
   build:
     runs-on: self-hosted
+
     steps:
       - uses: actions/checkout@v4
+      
       - uses: actions/setup-node@v4
         with:
           node-version: 20
+      
       - run: npm ci
-        env: 
+        env:
           MONGO_CONNECTION_URI: ${{ secrets.MONGO_CONNECTION_URI }}
           BASE_URL: ${{secrets.BASE_URL}}
+          JWT_ACCESS_SECRET: ${{secrets.JWT_ACCESS_SECRET}}
+          JWT_REFRESH_SECRET: ${{secrets.JWT_REFRESH_SECRET}}
+          REFRESH_TOKEN_EXPIRE: ${{secrets.REFRESH_TOKEN_EXPIRE}}
+          ACCESS_TOKEN_EXPIRE: ${{secrets.ACCESS_TOKEN_EXPIRE}}
+          REDIS_URL: ${{secrets.REDIS_URL}}
+      
+      - name: Create .env file
+        run: |
+          echo "MONGO_CONNECTION_URI=${{ secrets.MONGO_CONNECTION_URI }}" > .env
+          echo "BASE_URL=${{ secrets.BASE_URL }}" >> .env
+          echo "JWT_ACCESS_SECRET=${{ secrets.JWT_ACCESS_SECRET }}" >> .env
+          echo "JWT_REFRESH_SECRET=${{ secrets.JWT_REFRESH_SECRET }}" >> .env
+          echo "REFRESH_TOKEN_EXPIRE=${{ secrets.REFRESH_TOKEN_EXPIRE }}" >> .env
+          echo "ACCESS_TOKEN_EXPIRE=${{ secrets.ACCESS_TOKEN_EXPIRE }}" >> .env
+          echo "REDIS_URL=${{ secrets.REDIS_URL }}" >> .env
+      
+      - run: pm2 restart server
+          
+          
 
