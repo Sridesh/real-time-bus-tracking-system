@@ -11,11 +11,15 @@ class BusController {
    * Access: Public
    */
   getBusById = async (req, res) => {
-    const { busId } = req.params;
+    try {
+      const { busId } = req.params;
 
-    const bus = await busService.getBusById(busId);
+      const bus = await busService.getBusById(busId);
 
-    return res.status(200).json(bus);
+      return res.status(200).json(bus);
+    } catch (error) {
+      res.status(error.statusCode || 500).send(error.message);
+    }
   };
 
   /**
@@ -24,40 +28,43 @@ class BusController {
    * Access: Public
    */
   getAllBuses = async (req, res) => {
-    // Extract query parameters (already validated by middleware)
-    const {
-      page,
-      limit,
-      sortBy,
-      order,
-      status,
-      // operatorId,
-      // routeId,
-      minCapacity,
-      maxCapacity,
-      search,
-    } = req.query;
+    try {
+      const {
+        page,
+        limit,
+        sortBy,
+        order,
+        status,
+        // operatorId,
+        // routeId,
+        minCapacity,
+        maxCapacity,
+        search,
+      } = req.query;
 
-    const filters = {
-      status,
-      // operatorId,
-      // routeId,
-      minCapacity,
-      maxCapacity,
-      search,
-    };
+      const filters = {
+        status,
+        // operatorId,
+        // routeId,
+        minCapacity,
+        maxCapacity,
+        search,
+      };
 
-    //  options
-    const options = {
-      page: parseInt(page) || 1,
-      limit: parseInt(limit) || 20,
-      sortBy: sortBy || 'createdAt',
-      order: order || 'desc',
-    };
+      //  options
+      const options = {
+        page: parseInt(page) || 1,
+        limit: parseInt(limit) || 20,
+        sortBy: sortBy || 'createdAt',
+        order: order || 'desc',
+      };
 
-    const result = await busService.getAllBuses(filters, options);
+      const result = await busService.getAllBuses(filters, options);
 
-    res.status(200).json(result);
+      res.status(200).json(result);
+    } catch (error) {
+      res.status(error.statusCode || 500).send(error);
+    }
   };
 
   /**
@@ -74,7 +81,7 @@ class BusController {
       logger.info('Bus created');
       return res.status(201).json(bus);
     } catch (error) {
-      console.log(error.message);
+      logger.error(error);
 
       res.status(error.statusCode || 500).send(error.message);
     }
@@ -86,13 +93,17 @@ class BusController {
    * Access: Private (Operator/Admin)
    */
   updateBus = async (req, res) => {
-    const { busId } = req.params;
-    const updateData = req.body;
-    const user = req.user;
+    try {
+      const { busId } = req.params;
+      const updateData = req.body;
+      const user = req.user;
 
-    const bus = await busService.updateBus(busId, updateData, user);
+      const bus = await busService.updateBus(busId, updateData, user);
 
-    return res.status(200).json(bus);
+      return res.status(200).json(bus);
+    } catch (error) {
+      res.status(error.statusCode || 500).send(error);
+    }
   };
 
   /**
@@ -104,13 +115,12 @@ class BusController {
     try {
       const { busId } = req.params;
       const user = req.user;
-      console.log(user);
 
       await busService.deleteBus(busId, user);
 
       return res.status(204).send();
     } catch (error) {
-      console.log(error);
+      logger.error(error);
     }
   };
 }
