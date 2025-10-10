@@ -2,6 +2,7 @@ const express = require('express');
 const requireRoles = require('../../middleware/rbac.middleware');
 const authenticate = require('../../middleware/authenticate.middleware');
 const busController = require('../../controllers/bus.controller');
+const roles = require('../../utils/roles');
 
 const router = express.Router();
 
@@ -102,5 +103,193 @@ const router = express.Router();
  *                       type: number
  */
 router.get('/', busController.getAllBuses);
+
+/**
+ * @swagger
+ * /buses/{busId}:
+ *   get:
+ *     summary: Get all buses
+ *     tags: [Buses]
+ *     parameters:
+ *       - in: query
+ *         name: busId
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Bus object
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 buses:
+ *                   type: object
+ *                   properties:
+ *                     registrationNumber:
+ *                       type: string
+ *                     status:
+ *                       type: string
+ *                     capacity:
+ *                       type: number
+ */
+router.get('/:busId', busController.getBusById);
+
+/**
+ * @swagger
+ * /buses:
+ *   post:
+ *     summary: Create a new bus
+ *     tags: [Buses]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - registrationNumber
+ *               - capacity
+ *               - status
+ *             properties:
+ *               registrationNumber:
+ *                 type: string
+ *                 example: "WP-NA-1234"
+ *               status:
+ *                 type: string
+ *                 enum: [active, inactive, maintenance, out_of_service]
+ *                 example: active
+ *               capacity:
+ *                 type: integer
+ *                 example: 54
+ *               manufacturer:
+ *                 type: string
+ *                 example: "Ashok Leyland"
+ *               model:
+ *                 type: string
+ *                 example: "Viking"
+ *     responses:
+ *       201:
+ *         description: Bus created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: string
+ *                 registrationNumber:
+ *                   type: string
+ *                 status:
+ *                   type: string
+ *                 capacity:
+ *                   type: integer
+ *                 manufacturer:
+ *                   type: string
+ *                 model:
+ *                   type: string
+ *       400:
+ *         description: Invalid input data
+ */
+router.post('/', authenticate, requireRoles([roles.ADMIN]), busController.createBus);
+
+/**
+ * @swagger
+ * /buses:
+ *   put:
+ *     summary: Update an existing bus
+ *     tags: [Buses]
+ *     parameters:
+ *       - in: query
+ *         name: busId
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - registrationNumber
+ *               - capacity
+ *               - status
+ *             properties:
+ *               registrationNumber:
+ *                 type: string
+ *                 example: "WP-NA-1234"
+ *               status:
+ *                 type: string
+ *                 enum: [active, inactive, maintenance, out_of_service]
+ *                 example: active
+ *               capacity:
+ *                 type: integer
+ *                 example: 54
+ *               manufacturer:
+ *                 type: string
+ *                 example: "Ashok Leyland"
+ *               model:
+ *                 type: string
+ *                 example: "Viking"
+ *     responses:
+ *       201:
+ *         description: Bus created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: string
+ *                 registrationNumber:
+ *                   type: string
+ *                 status:
+ *                   type: string
+ *                 capacity:
+ *                   type: integer
+ *                 manufacturer:
+ *                   type: string
+ *                 model:
+ *                   type: string
+ *       400:
+ *         description: Invalid input data
+ */
+router.put(
+  '/:busId',
+  authenticate,
+  requireRoles([roles.ADMIN, roles.OPERATOR]),
+  busController.updateBus
+);
+
+/**
+ * @swagger
+ * /buses/{busId}:
+ *   delete:
+ *     summary: Delete a bus
+ *     tags: [Buses]
+ *     description: Delete a bus by its ID (Admin only)
+ *     parameters:
+ *       - in: path
+ *         name: busId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The ID of the bus to delete
+ *     responses:
+ *       204:
+ *         description: Bus deleted successfully (No Content)
+ *       400:
+ *         description: Invalid bus ID format
+ *       403:
+ *         description: Insufficient permission
+ *       404:
+ *         description: Bus not found
+ */
+router.delete(
+  '/:busId',
+  authenticate,
+  requireRoles([roles.ADMIN, roles.OPERATOR]),
+  busController.deleteBus
+);
 
 module.exports = router;

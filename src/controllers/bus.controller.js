@@ -1,3 +1,4 @@
+const logger = require('../config/logger.config.js');
 const busService = require('../services/bus.service.js');
 
 /**
@@ -65,12 +66,18 @@ class BusController {
    * Access: Private (Operator/Admin)
    */
   createBus = async (req, res) => {
-    const busData = req.body;
-    const user = req.user; // From auth middleware
+    try {
+      const busData = req.body;
+      const user = req.user;
 
-    const bus = await busService.createBus(busData, user);
+      const bus = await busService.createBus(busData, user);
+      logger.info('Bus created');
+      return res.status(201).json(bus);
+    } catch (error) {
+      console.log(error.message);
 
-    return res.status(201).json(bus);
+      res.status(error.statusCode || 500).send(error.message);
+    }
   };
 
   /**
@@ -94,12 +101,17 @@ class BusController {
    * Access: Private (Admin only)
    */
   deleteBus = async (req, res) => {
-    const { busId } = req.params;
-    const user = req.user;
+    try {
+      const { busId } = req.params;
+      const user = req.user;
+      console.log(user);
 
-    await busService.deleteBus(busId, user);
+      await busService.deleteBus(busId, user);
 
-    return res.status(204).send();
+      return res.status(204).send();
+    } catch (error) {
+      console.log(error);
+    }
   };
 }
 
