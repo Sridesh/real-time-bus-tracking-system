@@ -45,12 +45,9 @@ const routeController = require('../../controllers/route.controller');
  *         - distance
  *         - estimatedDuration
  *       properties:
- *         id:
- *           type: string
- *           example: "6717c4f547b4eaf4a7b0311c"
  *         name:
  *           type: string
- *           example: "Colombo - Kandy Express"
+ *           example: "Colombo - Kandy"
  *         routeNumber:
  *           type: string
  *           example: "01-001"
@@ -94,6 +91,9 @@ const routeController = require('../../controllers/route.controller');
  *         averageSpeed:
  *           type: number
  *           example: 38.5
+ *         mode:
+ *           type: string
+ *           enum: [Non-Express, Express, Highway]
  */
 
 /**
