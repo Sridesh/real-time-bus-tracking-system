@@ -1,0 +1,174 @@
+const mongoose = require('mongoose');
+const { stopSchema } = require('./stop.model');
+
+/**
+ * Route Schema - Bus route information
+ */
+const routeSchema = new mongoose.Schema(
+  {
+    name: {
+      type: String,
+      required: [true, 'Route name is required'],
+      trim: true,
+      minlength: [3, 'Route name must be at least 3 characters'],
+      maxlength: [200, 'Route name cannot exceed 200 characters'],
+    },
+    routeNumber: {
+      type: String,
+      required: [true, 'Route number is required'],
+      unique: true,
+      trim: true,
+      uppercase: true,
+      match: [/^\d{2}-\d{3}$/, 'Route number must be in format: XX-XXX (e.g., 01-001)'],
+    },
+    origin: {
+      type: String,
+      required: [true, 'Origin is required'],
+      trim: true,
+    },
+    destination: {
+      type: String,
+      required: [true, 'Destination is required'],
+      trim: true,
+    },
+    distance: {
+      type: Number,
+      required: [true, 'Distance is required'],
+      min: [0.1, 'Distance must be at least 0.1 km'],
+      max: [1000, 'Distance cannot exceed 1000 km'],
+    },
+    estimatedDuration: {
+      type: Number, // In minutes
+      required: [true, 'Estimated duration is required'],
+      min: [1, 'Duration must be at least 1 minute'],
+    },
+    stops: {
+      type: [stopSchema],
+      default: [],
+      validate: {
+        validator: function (stops) {
+          // Check if sequences are unique and in order
+          const sequences = stops.map((s) => s.sequence);
+          const uniqueSequences = new Set(sequences);
+          return uniqueSequences.size === sequences.length;
+        },
+        message: 'Stop sequences must be unique',
+      },
+    },
+    fare: {
+      type: Number,
+      required: [true, 'Fare is required'],
+      min: [0, 'Fare cannot be negative'],
+    },
+    operatingDays: {
+      type: [String],
+      enum: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],
+      default: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],
+    },
+    startTime: {
+      type: String, // Format: "HH:MM" (e.g., "06:00")
+      match: [/^([01]\d|2[0-3]):([0-5]\d)$/, 'Start time must be in HH:MM format'],
+    },
+    endTime: {
+      type: String,
+      match: [/^([01]\d|2[0-3]):([0-5]\d)$/, 'End time must be in HH:MM format'],
+    },
+    frequency: {
+      type: Number, // Minutes between buses
+      min: [5, 'Frequency must be at least 5 minutes'],
+    },
+    status: {
+      type: String,
+      enum: {
+        values: ['active', 'inactive', 'suspended'],
+        message: '{VALUE} is not a valid status',
+      },
+      default: 'active',
+    },
+  },
+  {
+    timestamps: true,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
+  }
+);
+
+// Indexes
+routeSchema.index({ routeNumber: 1 }, { unique: true });
+routeSchema.index({ origin: 1, destination: 1 });
+routeSchema.index({ status: 1 });
+routeSchema.index({ 'stops.location': '2dsphere' }); // Geospatial index for stops
+
+/**
+ * Virtual field - Total stops count
+ */
+routeSchema.virtual('totalStops').get(function () {
+  return this.stops.length;
+});
+
+/**
+ * Virtual field - Average speed (km/h)
+ */
+routeSchema.virtual('averageSpeed').get(function () {
+  if (this.estimatedDuration === 0) return 0;
+  return Math.round((this.distance / (this.estimatedDuration / 60)) * 10) / 10;
+});
+
+/**
+ * Virtual field - Buses on this route
+ */
+routeSchema.virtual('buses', {
+  ref: 'Bus',
+  localField: '_id',
+  foreignField: 'routeId',
+});
+
+/**
+ * Instance method - Check if route operates today
+ */
+routeSchema.methods.isOperatingToday = function () {
+  const today = new Date().toLocaleDateString('en-US', { weekday: 'long' });
+  return this.operatingDays.includes(today) && this.status === 'active';
+};
+
+/**
+ * Instance method - Get stop by sequence
+ */
+routeSchema.methods.getStopBySequence = function (sequence) {
+  return this.stops.find((stop) => stop.sequence === sequence);
+};
+
+/**
+ * Static method - Find routes between cities
+ */
+routeSchema.statics.findRoutesBetween = function (origin, destination) {
+  return this.find({
+    origin: new RegExp(origin, 'i'),
+    destination: new RegExp(destination, 'i'),
+    status: 'active',
+  });
+};
+
+/**
+ * Static method - Find routes by distance range
+ */
+routeSchema.statics.findByDistanceRange = function (minDistance, maxDistance) {
+  return this.find({
+    distance: { $gte: minDistance, $lte: maxDistance },
+    status: 'active',
+  });
+};
+
+/**
+ * Pre-save middleware - Sort stops by sequence
+ */
+routeSchema.pre('save', function (next) {
+  if (this.stops && this.stops.length > 0) {
+    this.stops.sort((a, b) => a.sequence - b.sequence);
+  }
+  next();
+});
+
+const Route = mongoose.model('Route', routeSchema);
+
+module.exports = Route;
