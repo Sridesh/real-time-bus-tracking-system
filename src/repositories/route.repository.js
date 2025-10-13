@@ -1,5 +1,6 @@
 /* eslint-disable no-useless-catch */
 const Route = require('../models/route.model');
+const Bus = require('../models/buses.model');
 
 /**
  * Route Repository - Handles all route database operations
@@ -159,9 +160,10 @@ class RouteRepository {
    */
   async getBusesOnRoute(routeId) {
     try {
-      const Bus = require('../models/bus.model.js').default;
-      return await Bus.find({ routeId, status: 'active' })
-        .populate('operatorId', 'name contactPerson')
+      console.log(Bus);
+
+      return await Bus.find({ routeId })
+        // .populate('operatorId', 'name contactPerson')
         .lean();
     } catch (error) {
       throw error;

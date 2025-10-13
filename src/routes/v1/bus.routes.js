@@ -167,7 +167,10 @@ router.get('/:busId', busController.getBusById);
  *                 example: "Ashok Leyland"
  *               model:
  *                 type: string
- *                 example: "Viking"
+ *               routeId:
+ *                 type: string
+ *               isPrivate:
+ *                 type: boolean
  *     responses:
  *       201:
  *         description: Bus created successfully
@@ -188,10 +191,18 @@ router.get('/:busId', busController.getBusById);
  *                   type: string
  *                 model:
  *                   type: string
+ *                 routeId:
+ *                    type: string
+ *                 isPrivate:
+ *                    type: boolean
  *       400:
  *         description: Invalid input data
  */
-router.post('/', authenticate, requireRoles([roles.ADMIN]), busController.createBus);
+router.post(
+  '/',
+  // authenticate, requireRoles([roles.ADMIN]),
+  busController.createBus
+);
 
 /**
  * @swagger

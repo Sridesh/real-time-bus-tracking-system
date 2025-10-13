@@ -13,6 +13,12 @@ const routeSchema = new mongoose.Schema(
       minlength: [3, 'Route name must be at least 3 characters'],
       maxlength: [200, 'Route name cannot exceed 200 characters'],
     },
+    mode: {
+      type: String,
+      trim: true,
+      enum: ['Non-Express', 'Express', 'Highway'],
+      required: [true, 'Mode is required'],
+    },
     routeNumber: {
       type: String,
       required: [true, 'Route number is required'],
@@ -47,7 +53,6 @@ const routeSchema = new mongoose.Schema(
       default: [],
       validate: {
         validator: function (stops) {
-          // Check if sequences are unique and in order
           const sequences = stops.map((s) => s.sequence);
           const uniqueSequences = new Set(sequences);
           return uniqueSequences.size === sequences.length;
@@ -55,11 +60,11 @@ const routeSchema = new mongoose.Schema(
         message: 'Stop sequences must be unique',
       },
     },
-    fare: {
-      type: Number,
-      required: [true, 'Fare is required'],
-      min: [0, 'Fare cannot be negative'],
-    },
+    // fare: {
+    //   type: Number,
+    //   required: [true, 'Fare is required'],
+    //   min: [0, 'Fare cannot be negative'],
+    // },
     operatingDays: {
       type: [String],
       enum: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],

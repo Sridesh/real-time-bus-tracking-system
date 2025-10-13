@@ -1,3 +1,4 @@
+const { isValidObjectId } = require('mongoose');
 const routeRepository = require('../repositories/route.repository');
 const ApiError = require('../utils/ApiError');
 
@@ -12,7 +13,7 @@ class RouteService {
    */
   async getRouteById(routeId) {
     // Validate ObjectId format
-    if (!this.isValidObjectId(routeId)) {
+    if (!isValidObjectId(routeId)) {
       throw new ApiError(400, 'Invalid route ID format');
     }
 
@@ -89,7 +90,7 @@ class RouteService {
    */
   async updateRoute(routeId, updateData) {
     // Validate ObjectId
-    if (!this.isValidObjectId(routeId)) {
+    if (!isValidObjectId(routeId)) {
       throw new ApiError(400, 'Invalid route ID format');
     }
 
@@ -129,7 +130,7 @@ class RouteService {
    */
   async deleteRoute(routeId) {
     // Validate ObjectId
-    if (!this.isValidObjectId(routeId)) {
+    if (!isValidObjectId(routeId)) {
       throw new ApiError(400, 'Invalid route ID format');
     }
 
@@ -159,7 +160,7 @@ class RouteService {
    */
   async getBusesOnRoute(routeId) {
     // Validate ObjectId
-    if (!this.isValidObjectId(routeId)) {
+    if (!isValidObjectId(routeId)) {
       throw new ApiError(400, 'Invalid route ID format');
     }
 
@@ -178,13 +179,14 @@ class RouteService {
       capacity: bus.capacity,
       status: bus.status,
       model: bus.model,
-      operator: bus.operatorId
-        ? {
-            id: bus.operatorId._id.toString(),
-            name: bus.operatorId.name,
-            contactPerson: bus.operatorId.contactPerson,
-          }
-        : null,
+      routeId: bus.routeId,
+      // operator: bus.operatorId
+      //   ? {
+      //       id: bus.operatorId._id.toString(),
+      //       name: bus.operatorId.name,
+      //       contactPerson: bus.operatorId.contactPerson,
+      //     }
+      //   : null,
     }));
   }
 
@@ -216,7 +218,9 @@ class RouteService {
 
     // Validate coordinates are in Sri Lanka
     stops.forEach((stop, index) => {
-      if (!this.isInSriLanka(stop.latitude, stop.longitude)) {
+      console.log(stop);
+
+      if (!this.isInSriLanka(stop.location.coordinates[0], stop.location.coordinates[1])) {
         throw new ApiError(
           400,
           `Stop ${index + 1} (${stop.name}) coordinates are outside Sri Lanka`
@@ -346,6 +350,8 @@ class RouteService {
    * @returns {boolean} True if in Sri Lanka
    */
   isInSriLanka(latitude, longitude) {
+    console.log(latitude, longitude);
+
     const bounds = {
       minLat: 5.9,
       maxLat: 9.9,
@@ -361,14 +367,14 @@ class RouteService {
     );
   }
 
-  /**
-   * Validate MongoDB ObjectId
-   * @param {string} id - ID to validate
-   * @returns {boolean} Valid or not
-   */
-  isValidObjectId(id) {
-    return /^[0-9a-fA-F]{24}$/.test(id);
-  }
+  //   /**
+  //    * Validate MongoDB ObjectId
+  //    * @param {string} id - ID to validate
+  //    * @returns {boolean} Valid or not
+  //    */
+  //   isValidObjectId(id) {
+  //     return /^[0-9a-fA-F]{24}$/.test(id);
+  //   }
 }
 
 module.exports = new RouteService();

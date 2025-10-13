@@ -65,12 +65,10 @@ const busSchema = new mongoose.Schema(
         message: '{VALUE} is not a valid feature',
       },
     },
-    // licensePlateExpiry: {
-    //   type: Date,
-    // },
-    // insuranceExpiry: {
-    //   type: Date,
-    // },
+    isPrivate: {
+      type: Boolean,
+      default: false,
+    },
     isTracking: {
       type: Boolean,
       default: false,
@@ -92,6 +90,7 @@ busSchema.index({ registrationNumber: 1 }, { unique: true });
 busSchema.index({ operatorId: 1, status: 1 });
 busSchema.index({ routeId: 1, status: 1 });
 busSchema.index({ status: 1, isTracking: 1 });
+busSchema.index({ isPrivate: 1 });
 
 /**
  * Virtual fields
@@ -109,23 +108,6 @@ busSchema.virtual('locationHistory', {
   localField: '_id',
   foreignField: 'busId',
 });
-
-// busSchema.virtual('isLicenseExpired').get(function () {
-//   if (!this.licensePlateExpiry) return false;
-//   return new Date() >= this.licensePlateExpiry;
-// });
-
-// busSchema.virtual('isInsuranceExpired').get(function () {
-//   if (!this.insuranceExpiry) return false;
-//   return new Date() >= this.insuranceExpiry;
-// });
-
-/**
- * Instance method - Check if bus is operational
- */
-// busSchema.methods.isOperational = function () {
-//   return this.status === 'active' && !this.isLicenseExpired && !this.isInsuranceExpired;
-// };
 
 /**
  * Instance method - Start tracking
@@ -176,6 +158,16 @@ busSchema.statics.findActiveTracking = function () {
 busSchema.statics.findRunningBuses = function () {
   return this.find({ isRunning: true, status: 'active' });
 };
+
+busSchema.pre('validate', function (next) {
+  console.log('Before validate, routeId:', this.routeId);
+  next();
+});
+
+busSchema.pre('save', async function (next) {
+  console.log(this.routeId);
+  next();
+});
 
 /**
  * Pre-remove middleware - Clean up related location data
