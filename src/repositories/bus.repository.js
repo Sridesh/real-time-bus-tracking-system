@@ -87,8 +87,10 @@ class BusRepository {
    * @returns {Promise<Object>} Created bus document
    */
   async create(busData) {
+    console.log(busData);
     try {
-      const bus = await Bus.create(busData);
+      const bus = new Bus(busData);
+      await bus.save();
       return bus.toObject();
     } catch (error) {
       throw error;
