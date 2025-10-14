@@ -1,4 +1,5 @@
 const stopService = require('../services/stop.service');
+const crypto = require('crypto');
 
 /**
  * Stop Controller - Handles bus stop HTTP requests
@@ -26,6 +27,30 @@ class StopController {
     try {
       const { search } = req.query;
       const result = await stopService.findAll(search);
+
+      // ETag for stops list
+      const etag = crypto.createHash('md5').update(JSON.stringify(result)).digest('hex');
+      res.set('ETag', etag);
+
+      // Last-Modified: latest updatedAt among stops
+      const lastModified = result.reduce((latest, stop) => {
+        const updated = stop.updatedAt ? new Date(stop.updatedAt) : null;
+        return updated && (!latest || updated > latest) ? updated : latest;
+      }, null);
+      if (lastModified) {
+        res.set('Last-Modified', lastModified.toUTCString());
+      }
+
+      if (req.headers['if-none-match'] === etag) {
+        return res.status(304).end();
+      }
+      if (req.headers['if-modified-since'] && lastModified) {
+        const since = new Date(req.headers['if-modified-since']);
+        if (lastModified <= since) {
+          return res.status(304).end();
+        }
+      }
+
       res.status(200).json(result);
     } catch (error) {
       next(error);
@@ -39,6 +64,26 @@ class StopController {
   async getById(req, res, next) {
     try {
       const result = await stopService.findById(req.params.stopId);
+
+      // ETag for stop
+      const etag = crypto.createHash('md5').update(JSON.stringify(result)).digest('hex');
+      res.set('ETag', etag);
+
+      if (result.updatedAt) {
+        res.set('Last-Modified', new Date(result.updatedAt).toUTCString());
+      }
+
+      if (req.headers['if-none-match'] === etag) {
+        return res.status(304).end();
+      }
+      if (req.headers['if-modified-since'] && result.updatedAt) {
+        const since = new Date(req.headers['if-modified-since']);
+        const updated = new Date(result.updatedAt);
+        if (updated <= since) {
+          return res.status(304).end();
+        }
+      }
+
       res.status(200).json(result);
     } catch (error) {
       next(error);

@@ -1,5 +1,6 @@
 const logger = require('../config/logger.config');
 const routeService = require('../services/route.service');
+const crypto = require('crypto');
 
 /**
  * @desc Get all routes with optional filters and pagination
@@ -27,6 +28,30 @@ exports.getAllRoutes = async (req, res, next) => {
     };
 
     const result = await routeService.getAllRoutes(filters, options);
+
+    // ETag for routes list
+    const etag = crypto.createHash('md5').update(JSON.stringify(result.routes)).digest('hex');
+    res.set('ETag', etag);
+
+    // Last-Modified: latest updatedAt among routes
+    const lastModified = result.routes.reduce((latest, route) => {
+      const updated = route.updatedAt ? new Date(route.updatedAt) : null;
+      return updated && (!latest || updated > latest) ? updated : latest;
+    }, null);
+    if (lastModified) {
+      res.set('Last-Modified', lastModified.toUTCString());
+    }
+
+    if (req.headers['if-none-match'] === etag) {
+      return res.status(304).end();
+    }
+    if (req.headers['if-modified-since'] && lastModified) {
+      const since = new Date(req.headers['if-modified-since']);
+      if (lastModified <= since) {
+        return res.status(304).end();
+      }
+    }
+
     res.status(200).json(result);
   } catch (err) {
     logger.error({ err }, 'Error getting routes');
@@ -41,6 +66,26 @@ exports.getAllRoutes = async (req, res, next) => {
 exports.getRouteById = async (req, res, next) => {
   try {
     const route = await routeService.getRouteById(req.params.id);
+
+    // ETag for route
+    const etag = crypto.createHash('md5').update(JSON.stringify(route)).digest('hex');
+    res.set('ETag', etag);
+
+    if (route.updatedAt) {
+      res.set('Last-Modified', new Date(route.updatedAt).toUTCString());
+    }
+
+    if (req.headers['if-none-match'] === etag) {
+      return res.status(304).end();
+    }
+    if (req.headers['if-modified-since'] && route.updatedAt) {
+      const since = new Date(req.headers['if-modified-since']);
+      const updated = new Date(route.updatedAt);
+      if (updated <= since) {
+        return res.status(304).end();
+      }
+    }
+
     res.status(200).json(route);
   } catch (err) {
     logger.error({ err, routeId: req.params.id }, 'Error getting route by ID');
