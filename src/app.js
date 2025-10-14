@@ -52,11 +52,6 @@ app.use('/docs', swaggerUI.serve, swaggerUI.setup(swaggerSpecs));
 // API routes
 app.use('/api', routes);
 
-// health endpoint
-app.get('/health', (_req, res) => {
-  res.status(200).json({ status: 'ok' });
-});
-
 // Error handler (should be last)
 app.use(errorHandler);
 
