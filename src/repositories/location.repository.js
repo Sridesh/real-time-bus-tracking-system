@@ -11,6 +11,8 @@ class LocationRepository {
    * @returns {Promise<Object>} Created location
    */
   async create(locationData) {
+    console.log(locationData);
+
     try {
       const location = await Location.create(locationData);
       return location.toObject();
