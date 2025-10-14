@@ -185,6 +185,39 @@ class RouteRepository {
       throw error;
     }
   }
+
+  async routesBetweenStops(originStop, destinationStop) {
+    try {
+      const routes = await Route.find({
+        status: 'active',
+        $and: [
+          { 'stops.name': { $regex: originStop, $options: 'i' } },
+          { 'stops.name': { $regex: destinationStop, $options: 'i' } },
+        ],
+      })
+        .select('name routeNumber origin destination distance fare estimatedDuration stops')
+        .lean();
+
+      return routes;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async routesByStop(stopName) {
+    try {
+      const route = await Route.find({
+        status: 'active',
+        'stops.name': { $regex: stopName, $options: 'i' },
+      })
+        .select('name routeNumber origin destination distance fare operatingDays stops')
+        .lean();
+
+      return route;
+    } catch (error) {
+      throw error;
+    }
+  }
 }
 
 module.exports = new RouteRepository();

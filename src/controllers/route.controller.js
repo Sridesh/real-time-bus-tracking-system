@@ -108,17 +108,57 @@ exports.getBusesOnRoute = async (req, res, next) => {
 };
 
 /**
+ * @desc Get all stops in a route
+ * @route GET /api/v1/routes/:id/stops
+ */
+exports.getStopsByRoute = async (req, res, next) => {
+  try {
+    const stops = await routeService.getStopsByRoute(req.params.id);
+    res.status(200).json(stops);
+  } catch (err) {
+    logger.error({ err, routeId: req.params.id }, 'Error getting buses for route');
+    next(err);
+  }
+};
+
+/**
  * Get all stops for a route
  * Route: GET /api/v1/routes/:routeId/stops
  * Access: Public
  */
 exports.getStopsByRoute = async (req, res) => {
   try {
-    const { routeId } = req.params;
+    const { id } = req.params;
 
-    const stops = await routeService.getStopsByRoute(routeId);
+    const stops = await routeService.getStopsByRoute(id);
 
     return res.status(200).json(stops);
+  } catch (error) {
+    res.status(error.statusCode || 500).send(error.message);
+  }
+};
+
+/**
+ * Find routes by  stops
+ * Route: GET /api/v1/routes/stops
+ * Access: Public
+ */
+exports.findRoutesByStops = async (req, res) => {
+  try {
+    const { stop, origin, destination } = req.query;
+    console.log(origin, destination);
+
+    let routes;
+
+    if (origin && destination) {
+      routes = await routeService.findRoutesBetweenStops(origin, destination);
+    }
+
+    if (stop) {
+      routes = await routeService.findRoutesByStop(stop);
+    }
+
+    res.status(200).json(routes);
   } catch (error) {
     res.status(error.statusCode || 500).send(error.message);
   }
