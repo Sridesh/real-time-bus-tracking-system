@@ -40,11 +40,22 @@ app.use(
 );
 // CORS
 const corsOptions = {
-  origin: ['*'],
+  origin: '*',
   credentials: true,
   optionsSuccessStatus: 200,
 };
 app.use(cors(corsOptions));
+
+app.get('/api/v1', (req, res) => {
+  res.json({
+    success: true,
+    message: 'Bus Tracking API Server',
+    version: '1.0.0',
+    documentation: '/docs',
+    apiBase: '/api/v1',
+    health: '/api/v1/health',
+  });
+});
 
 // swagger docs
 app.use('/docs', swaggerUI.serve, swaggerUI.setup(swaggerSpecs));
