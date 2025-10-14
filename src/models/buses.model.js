@@ -86,7 +86,6 @@ const busSchema = new mongoose.Schema(
 );
 
 // indexes
-busSchema.index({ registrationNumber: 1 }, { unique: true });
 busSchema.index({ operatorId: 1, status: 1 });
 busSchema.index({ routeId: 1, status: 1 });
 busSchema.index({ status: 1, isTracking: 1 });

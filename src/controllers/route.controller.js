@@ -1,5 +1,6 @@
 const logger = require('../config/logger.config');
 const routeService = require('../services/route.service');
+const crypto = require('crypto');
 
 /**
  * @desc Get all routes with optional filters and pagination
@@ -27,9 +28,32 @@ exports.getAllRoutes = async (req, res, next) => {
     };
 
     const result = await routeService.getAllRoutes(filters, options);
+
+    // ETag for routes list
+    const etag = crypto.createHash('md5').update(JSON.stringify(result.routes)).digest('hex');
+    res.set('ETag', etag);
+
+    // Last-Modified: latest updatedAt among routes
+    const lastModified = result.routes.reduce((latest, route) => {
+      const updated = route.updatedAt ? new Date(route.updatedAt) : null;
+      return updated && (!latest || updated > latest) ? updated : latest;
+    }, null);
+    if (lastModified) {
+      res.set('Last-Modified', lastModified.toUTCString());
+    }
+
+    if (req.headers['if-none-match'] === etag) {
+      return res.status(304).end();
+    }
+    if (req.headers['if-modified-since'] && lastModified) {
+      const since = new Date(req.headers['if-modified-since']);
+      if (lastModified <= since) {
+        return res.status(304).end();
+      }
+    }
+
     res.status(200).json(result);
   } catch (err) {
-    logger.error({ err }, 'Error getting routes');
     next(err);
   }
 };
@@ -41,9 +65,28 @@ exports.getAllRoutes = async (req, res, next) => {
 exports.getRouteById = async (req, res, next) => {
   try {
     const route = await routeService.getRouteById(req.params.id);
+
+    // ETag for route
+    const etag = crypto.createHash('md5').update(JSON.stringify(route)).digest('hex');
+    res.set('ETag', etag);
+
+    if (route.updatedAt) {
+      res.set('Last-Modified', new Date(route.updatedAt).toUTCString());
+    }
+
+    if (req.headers['if-none-match'] === etag) {
+      return res.status(304).end();
+    }
+    if (req.headers['if-modified-since'] && route.updatedAt) {
+      const since = new Date(req.headers['if-modified-since']);
+      const updated = new Date(route.updatedAt);
+      if (updated <= since) {
+        return res.status(304).end();
+      }
+    }
+
     res.status(200).json(route);
   } catch (err) {
-    logger.error({ err, routeId: req.params.id }, 'Error getting route by ID');
     next(err);
   }
 };
@@ -58,7 +101,6 @@ exports.createRoute = async (req, res, next) => {
     logger.info({ routeId: route.id }, 'Route created');
     res.status(201).json(route);
   } catch (err) {
-    logger.error({ err }, 'Error creating route');
     next(err);
   }
 };
@@ -73,7 +115,6 @@ exports.updateRoute = async (req, res, next) => {
     logger.info({ routeId: updatedRoute.id }, 'Route updated');
     res.status(200).json(updatedRoute);
   } catch (err) {
-    logger.error({ err, routeId: req.params.id }, 'Error updating route');
     next(err);
   }
 };
@@ -88,7 +129,6 @@ exports.deleteRoute = async (req, res, next) => {
     logger.info({ routeId: req.params.id }, 'Route deleted');
     res.status(200).json({ message: 'Route deleted successfully' });
   } catch (err) {
-    logger.error({ err, routeId: req.params.id }, 'Error deleting route');
     next(err);
   }
 };
@@ -102,7 +142,6 @@ exports.getBusesOnRoute = async (req, res, next) => {
     const buses = await routeService.getBusesOnRoute(req.params.id);
     res.status(200).json(buses);
   } catch (err) {
-    logger.error({ err, routeId: req.params.id }, 'Error getting buses for route');
     next(err);
   }
 };
@@ -116,7 +155,6 @@ exports.getStopsByRoute = async (req, res, next) => {
     const stops = await routeService.getStopsByRoute(req.params.id);
     res.status(200).json(stops);
   } catch (err) {
-    logger.error({ err, routeId: req.params.id }, 'Error getting buses for route');
     next(err);
   }
 };
@@ -126,7 +164,7 @@ exports.getStopsByRoute = async (req, res, next) => {
  * Route: GET /api/v1/routes/:routeId/stops
  * Access: Public
  */
-exports.getStopsByRoute = async (req, res) => {
+exports.getStopsByRoute = async (req, res, next) => {
   try {
     const { id } = req.params;
 
@@ -134,7 +172,7 @@ exports.getStopsByRoute = async (req, res) => {
 
     return res.status(200).json(stops);
   } catch (error) {
-    res.status(error.statusCode || 500).send(error.message);
+    next(error);
   }
 };
 
@@ -143,7 +181,7 @@ exports.getStopsByRoute = async (req, res) => {
  * Route: GET /api/v1/routes/stops
  * Access: Public
  */
-exports.findRoutesByStops = async (req, res) => {
+exports.findRoutesByStops = async (req, res, next) => {
   try {
     const { stop, origin, destination } = req.query;
     console.log(origin, destination);
@@ -160,6 +198,6 @@ exports.findRoutesByStops = async (req, res) => {
 
     res.status(200).json(routes);
   } catch (error) {
-    res.status(error.statusCode || 500).send(error.message);
+    next(error);
   }
 };
