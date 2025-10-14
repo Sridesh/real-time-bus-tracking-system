@@ -103,11 +103,6 @@ class RouteService {
       }
     }
 
-    // Validate stops if provided
-    if (updateData.stops && updateData.stops.length > 0) {
-      this.validateStops(updateData.stops);
-    }
-
     // Update route
     const updatedRoute = await routeRepository.update(routeId, updateData);
 
