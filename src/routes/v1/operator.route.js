@@ -1,5 +1,8 @@
 const express = require('express');
 const operatorController = require('../../controllers/operator.controller');
+const authenticate = require('../../middleware/authenticate.middleware');
+const requireRoles = require('../../middleware/rbac.middleware');
+const roles = require('../../utils/roles');
 const router = express.Router();
 
 /**
@@ -29,7 +32,12 @@ const router = express.Router();
  *             schema:
  *               $ref: '#/components/schemas/Operator'
  */
-router.post('/', operatorController.createOperator);
+router.post(
+  '/',
+  authenticate,
+  requireRoles([roles.ADMIN, roles.OPERATOR]),
+  operatorController.createOperator
+);
 
 /**
  * @swagger
@@ -47,7 +55,7 @@ router.post('/', operatorController.createOperator);
  *               items:
  *                 $ref: '#/components/schemas/Operator'
  */
-router.get('/', operatorController.getOperators);
+router.get('/', authenticate, requireRoles([roles.ADMIN]), operatorController.getOperators);
 
 /**
  * @swagger
@@ -74,7 +82,12 @@ router.get('/', operatorController.getOperators);
  *       404:
  *         description: No operators found in the province
  */
-router.get('/province', operatorController.findByProvince);
+router.get(
+  '/province',
+  authenticate,
+  requireRoles([roles.ADMIN, roles.OPERATOR]),
+  operatorController.findByProvince
+);
 
 /**
  * @swagger
@@ -99,7 +112,7 @@ router.get('/province', operatorController.findByProvince);
  *       404:
  *         description: Operator not found
  */
-router.get('/:id', operatorController.getOperatorById);
+router.get('/:id', authenticate, operatorController.getOperatorById);
 
 /**
  * @swagger
@@ -130,7 +143,12 @@ router.get('/:id', operatorController.getOperatorById);
  *       404:
  *         description: Operator not found
  */
-router.put('/:id', operatorController.updateOperator);
+router.put(
+  '/:id',
+  authenticate,
+  requireRoles([roles.ADMIN, roles.OPERATOR]),
+  operatorController.updateOperator
+);
 
 /**
  * @swagger
@@ -151,7 +169,12 @@ router.put('/:id', operatorController.updateOperator);
  *       404:
  *         description: Operator not found
  */
-router.delete('/:id', operatorController.deleteOperator);
+router.delete(
+  '/:id',
+  authenticate,
+  requireRoles([roles.ADMIN, roles.OPERATOR]),
+  operatorController.deleteOperator
+);
 
 /**
  * @swagger
@@ -176,6 +199,11 @@ router.delete('/:id', operatorController.deleteOperator);
  *       404:
  *         description: Operator not found
  */
-router.get('/user/:userId', operatorController.getOperatorByUserId);
+router.get(
+  '/user/:userId',
+  authenticate,
+  requireRoles([roles.ADMIN]),
+  operatorController.getOperatorByUserId
+);
 
 module.exports = router;

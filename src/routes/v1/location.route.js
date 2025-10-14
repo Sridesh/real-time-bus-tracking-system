@@ -1,5 +1,8 @@
 const express = require('express');
 const LocationController = require('../../controllers/location.controller');
+const authenticate = require('../../middleware/authenticate.middleware');
+const requireRoles = require('../../middleware/rbac.middleware');
+const roles = require('../../utils/roles');
 
 const router = express.Router();
 
@@ -36,7 +39,7 @@ const router = express.Router();
  *       200:
  *         description: Location updated successfully
  */
-router.post('/', LocationController.updateLocation);
+router.post('/', authenticate, requireRoles([roles.OPERATOR]), LocationController.updateLocation);
 
 /**
  * @swagger
@@ -79,7 +82,7 @@ router.get('/buses-active', LocationController.getAllActiveBusLocations);
  *       200:
  *         description: Estimated arrival time
  */
-router.get('/estimated-arrival', LocationController.getEstimatedTime);
+router.get('/estimated-arrival', authenticate, LocationController.getEstimatedTime);
 
 /**
  * @swagger
@@ -109,7 +112,7 @@ router.get('/estimated-arrival', LocationController.getEstimatedTime);
  *       200:
  *         description: Estimated arrival times for multiple buses
  */
-router.post('/multiple-arrivals', LocationController.getMultipleEstimatedTime);
+router.post('/multiple-arrivals', authenticate, LocationController.getMultipleEstimatedTime);
 
 /**
  * @swagger
@@ -156,6 +159,6 @@ router.get('/:busId', LocationController.getLocationByBus);
  *       200:
  *         description: List of nearby buses
  */
-router.post('/buses-nearby', LocationController.getNearbyBuses);
+router.post('/buses-nearby', authenticate, LocationController.getNearbyBuses);
 
 module.exports = router;

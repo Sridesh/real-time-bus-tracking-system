@@ -198,11 +198,7 @@ router.get('/:busId', busController.getBusById);
  *       400:
  *         description: Invalid input data
  */
-router.post(
-  '/',
-  // authenticate, requireRoles([roles.ADMIN]),
-  busController.createBus
-);
+router.post('/', authenticate, requireRoles([roles.ADMIN]), busController.createBus);
 
 /**
  * @swagger
@@ -267,8 +263,8 @@ router.post(
  */
 router.put(
   '/:busId',
-  // authenticate,
-  // requireRoles([roles.ADMIN, roles.OPERATOR]),
+  authenticate,
+  requireRoles([roles.ADMIN, roles.OPERATOR]),
   busController.updateBus
 );
 
@@ -296,11 +292,6 @@ router.put(
  *       404:
  *         description: Bus not found
  */
-router.delete(
-  '/:busId',
-  authenticate,
-  requireRoles([roles.ADMIN, roles.OPERATOR]),
-  busController.deleteBus
-);
+router.delete('/:busId', authenticate, requireRoles([roles.ADMIN]), busController.deleteBus);
 
 module.exports = router;
