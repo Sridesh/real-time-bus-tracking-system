@@ -2,6 +2,7 @@ const jwt = require('jsonwebtoken');
 const { v4: uuidv4 } = require('uuid');
 
 const redisService = require('./redis.service');
+const logger = require('../config/logger.config');
 
 /**
  * Token Service - Handles JWT token generation, validation and rotation
@@ -149,6 +150,7 @@ class JwtService {
     try {
       return jwt.decode(token);
     } catch (error) {
+      logger.error(error);
       return null;
     }
   }
@@ -166,6 +168,7 @@ class JwtService {
       const currentTime = Math.floor(Date.now() / 1000);
       return decoded.exp < currentTime;
     } catch (error) {
+      logger.error(error);
       return true;
     }
   }
