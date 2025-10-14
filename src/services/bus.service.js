@@ -91,13 +91,6 @@ class BusService {
       throw new ApiError(404, 'Bus not found');
     }
 
-    // Permission check
-    if (user.role === roles.OPERATOR || user.role === roles.ADMIN) {
-      if (existingBus.operatorId._id.toString() !== user.operatorId) {
-        throw new ApiError(403, 'Insufficient permission');
-      }
-    }
-
     // Check uniqueness of registration number
     if (updateData.registrationNumber) {
       const existingRegNumber = await busRepository.findByRegistration(

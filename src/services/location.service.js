@@ -414,6 +414,15 @@ class LocationService {
   }
 
   /**
+   * Convert degrees to radians
+   * @param {number} degrees - Degrees
+   * @returns {number} Radians
+   */
+  toRad(degrees) {
+    return (degrees * Math.PI) / 180;
+  }
+
+  /**
    * Get heading direction from degrees
    * @param {number} heading - Heading in degrees
    * @returns {string} Direction (N, NE, E, SE, S, SW, W, NW)
