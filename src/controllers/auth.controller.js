@@ -3,9 +3,8 @@ const bcrypt = require('bcrypt');
 const userRepository = require('../repositories/user.repository');
 const jwtService = require('../services/jwt.service');
 const redisService = require('../services/redis.service');
-const logger = require('../config/logger.config');
 
-const signup = async (req, res) => {
+const signup = async (req, res, next) => {
   try {
     const { phone_number, password, role, email, name } = req.body;
 
@@ -19,11 +18,11 @@ const signup = async (req, res) => {
 
     res.status(201).json(user);
   } catch (error) {
-    res.status(error.code || 500).send(error.message || 'User creation failed');
+    next(error);
   }
 };
 
-const login = async (req, res) => {
+const login = async (req, res, next) => {
   try {
     const { email, password } = req.body;
 
@@ -39,11 +38,11 @@ const login = async (req, res) => {
 
     res.status(200).json({ accessToken, refreshToken });
   } catch (error) {
-    res.status(error.code || 500).send(error.message || 'Login failed');
+    next(error);
   }
 };
 
-const refreshToken = async (req, res) => {
+const refreshToken = async (req, res, next) => {
   try {
     const { refresh_token } = req.body;
     const payload = jwtService.verifyRefreshToken(refresh_token, process.env.JWT_REFRESH_SECRET);
@@ -66,12 +65,11 @@ const refreshToken = async (req, res) => {
 
     res.status(200).json({ accessToken, refreshToken });
   } catch (err) {
-    logger.error(err);
-    return res.status(401).json({ message: 'Invalid or expired refresh token' });
+    next(err);
   }
 };
 
-const logout = async (req, res) => {
+const logout = async (req, res, next) => {
   const { refresh_token } = req.body;
 
   try {
@@ -80,8 +78,7 @@ const logout = async (req, res) => {
     await redisService.del(`refresh:${jti}`);
     res.json({ message: 'Logged out' });
   } catch (err) {
-    logger.error(err);
-    return res.status(500).json({ message: err.message || 'Could not logout' });
+    next(err);
   }
 };
 

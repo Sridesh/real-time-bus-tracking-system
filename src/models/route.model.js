@@ -85,7 +85,6 @@ const routeSchema = new mongoose.Schema(
 );
 
 // Indexes
-routeSchema.index({ routeNumber: 1 }, { unique: true });
 routeSchema.index({ origin: 1, destination: 1 });
 routeSchema.index({ status: 1 });
 routeSchema.index({ 'stops.location': '2dsphere' }); // Geospatial index for stops
