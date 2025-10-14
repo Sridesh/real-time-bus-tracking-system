@@ -185,14 +185,13 @@ class RouteService {
     }));
   }
 
-  //TODO
   /**
    * Get all stops for a route
    * @param {string} routeId - Route ID
    * @returns {Promise<Array>} Array of stops
    */
   async getStopsByRoute(routeId) {
-    if (!this.isValidObjectId(routeId)) {
+    if (!isValidObjectId(routeId)) {
       throw new ApiError(400, 'Invalid route ID format');
     }
 
@@ -300,8 +299,6 @@ class RouteService {
       totalStops: route.stops ? route.stops.length : 0,
       fare: route.fare,
       operatingDays: route.operatingDays || [],
-      startTime: route.startTime || null,
-      endTime: route.endTime || null,
       frequency: route.frequency || null,
       status: route.status,
       averageSpeed: route.estimatedDuration
@@ -349,14 +346,110 @@ class RouteService {
     );
   }
 
-  //   /**
-  //    * Validate MongoDB ObjectId
-  //    * @param {string} id - ID to validate
-  //    * @returns {boolean} Valid or not
-  //    */
-  //   isValidObjectId(id) {
-  //     return /^[0-9a-fA-F]{24}$/.test(id);
-  //   }
+  /**
+   * Find routes that pass through a specific stop
+   * @param {string} stopName - Stop name
+   * @returns {Promise<Array>} Routes passing through the stop
+   */
+  async findRoutesByStop(stopName) {
+    const routes = await routeRepository.routesByStop(stopName);
+
+    return routes.map((route) => {
+      // Find the matching stop(s) in this route
+      const matchingStops = route.stops.filter((stop) =>
+        stop.name.toLowerCase().includes(stopName.toLowerCase())
+      );
+
+      return {
+        route: {
+          id: route._id.toString(),
+          name: route.name,
+          routeNumber: route.routeNumber,
+          origin: route.origin,
+          destination: route.destination,
+          distance: route.distance,
+          fare: route.fare,
+          operatingDays: route.operatingDays,
+          totalStops: route.stops.length,
+        },
+        matchingStops: matchingStops.map((stop) => ({
+          name: stop.name,
+          sequence: stop.sequence,
+          latitude: stop.location.coordinates[1],
+          longitude: stop.location.coordinates[0],
+          estimatedArrival: stop.estimatedArrival,
+        })),
+      };
+    });
+  }
+
+  /**
+   * Find routes between two stops (origin and destination)
+   * @param {string} originId - Origin stop name
+   * @param {string} destinationId- Destination stop name
+   * @returns {Promise<Array>} Routes connecting both stops
+   */
+  async findRoutesBetweenStops(originStop, destinationStop) {
+    const routes = await routeRepository.routesBetweenStops(originStop, destinationStop);
+
+    // const validRoutes = [];
+
+    // routes.forEach((route) => {
+    //   const originStopData = route.stops.find((stop) =>
+    //     stop.name.toLowerCase().includes(originStop.toLowerCase())
+    //   );
+    //   const destinationStopData = route.stops.find((stop) =>
+    //     stop.name.toLowerCase().includes(destinationStop.toLowerCase())
+    //   );
+
+    //   // Check if origin comes before destination
+    //   if (
+    //     originStopData &&
+    //     destinationStopData &&
+    //     originStopData.sequence < destinationStopData.sequence
+    //   ) {
+    //     // Calculate segment details
+    //     const segmentDistance = this.calculateSegmentDistance(
+    //       originStopData,
+    //       destinationStopData,
+    //       route.stops
+    //     );
+
+    //     validRoutes.push({
+    //       route: {
+    //         id: route._id.toString(),
+    //         name: route.name,
+    //         routeNumber: route.routeNumber,
+    //         origin: route.origin,
+    //         destination: route.destination,
+    //         totalDistance: route.distance,
+    //         totalFare: route.fare,
+    //         totalDuration: route.estimatedDuration,
+    //       },
+    //       journey: {
+    //         originStop: {
+    //           name: originStopData.name,
+    //           sequence: originStopData.sequence,
+    //           latitude: originStopData.location.coordinates[1],
+    //           longitude: originStopData.location.coordinates[0],
+    //           estimatedArrival: originStopData.estimatedArrival,
+    //         },
+    //         destinationStop: {
+    //           name: destinationStopData.name,
+    //           sequence: destinationStopData.sequence,
+    //           latitude: destinationStopData.location.coordinates[1],
+    //           longitude: destinationStopData.location.coordinates[0],
+    //           estimatedArrival: destinationStopData.estimatedArrival,
+    //         },
+    //         numberOfStops: destinationStopData.sequence - originStopData.sequence + 1,
+    //         estimatedDistance: segmentDistance,
+    //       },
+    //     });
+    //   }
+    // });
+
+    return routes;
+  }
 }
 
 module.exports = new RouteService();

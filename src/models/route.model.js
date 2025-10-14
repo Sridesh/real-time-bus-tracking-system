@@ -25,7 +25,6 @@ const routeSchema = new mongoose.Schema(
       unique: true,
       trim: true,
       uppercase: true,
-      match: [/^\d{2}-\d{3}$/, 'Route number must be in format: XX-XXX (e.g., 01-001)'],
     },
     origin: {
       type: String,
@@ -64,14 +63,6 @@ const routeSchema = new mongoose.Schema(
       type: [String],
       enum: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],
       default: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],
-    },
-    startTime: {
-      type: String, // Format: "HH:MM" (e.g., "06:00")
-      match: [/^([01]\d|2[0-3]):([0-5]\d)$/, 'Start time must be in HH:MM format'],
-    },
-    endTime: {
-      type: String,
-      match: [/^([01]\d|2[0-3]):([0-5]\d)$/, 'End time must be in HH:MM format'],
     },
     frequency: {
       type: Number, // Minutes between buses

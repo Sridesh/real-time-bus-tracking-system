@@ -64,12 +64,6 @@ const routeController = require('../../controllers/route.controller');
  *           items:
  *             type: string
  *           example: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
- *         startTime:
- *           type: string
- *           example: "06:00"
- *         endTime:
- *           type: string
- *           example: "21:00"
  *         frequency:
  *           type: number
  *           example: 30
@@ -178,6 +172,36 @@ router.get('/', routeController.getAllRoutes);
 
 /**
  * @swagger
+ * /routes/stops:
+ *   get:
+ *     summary: Get all buses assigned to a specific route
+ *     tags: [Routes]
+ *     parameters:
+ *       - in: query
+ *         name: stop
+ *         schema:
+ *           type: string
+ *         description: for single stop based searching
+ *       - in: query
+ *         name: origin
+ *         schema:
+ *           type: string
+ *         description: Starting bus stop
+ *       - in: query
+ *         name: destination
+ *         schema:
+ *           type: string
+ *         description: Destination bus stop
+ *     responses:
+ *       200:
+ *         description: list of routes which includes the stops
+ *       404:
+ *         description: Route not found
+ */
+router.get('/stops', routeController.findRoutesByStops);
+
+/**
+ * @swagger
  * /routes/{id}:
  *   get:
  *     summary: Get a route by ID
@@ -241,6 +265,47 @@ router.get('/:id', routeController.getRouteById);
  *         description: Route not found
  */
 router.get('/:id/buses', routeController.getBusesOnRoute);
+
+/**
+ * @swagger
+ * /routes/{id}/stops:
+ *   get:
+ *     summary: Get all buses assigned to a specific route
+ *     tags: [Routes]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Route ID
+ *     responses:
+ *       200:
+ *         description: List of buses on the route
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: string
+ *                     example: "6717d0fa34b2b3f2a6e0b112"
+ *                   plateNumber:
+ *                     type: string
+ *                     example: "NA-4523"
+ *                   capacity:
+ *                     type: integer
+ *                     example: 45
+ *                   status:
+ *                     type: string
+ *                     enum: [active, maintenance, inactive]
+ *                     example: "active"
+ *       404:
+ *         description: Route not found
+ */
+router.get('/:id/stops', routeController.getStopsByRoute);
 
 /**
  * @swagger
