@@ -54,7 +54,6 @@ exports.getAllRoutes = async (req, res, next) => {
 
     res.status(200).json(result);
   } catch (err) {
-    logger.error({ err }, 'Error getting routes');
     next(err);
   }
 };
@@ -88,7 +87,6 @@ exports.getRouteById = async (req, res, next) => {
 
     res.status(200).json(route);
   } catch (err) {
-    logger.error({ err, routeId: req.params.id }, 'Error getting route by ID');
     next(err);
   }
 };
@@ -103,7 +101,6 @@ exports.createRoute = async (req, res, next) => {
     logger.info({ routeId: route.id }, 'Route created');
     res.status(201).json(route);
   } catch (err) {
-    logger.error({ err }, 'Error creating route');
     next(err);
   }
 };
@@ -118,7 +115,6 @@ exports.updateRoute = async (req, res, next) => {
     logger.info({ routeId: updatedRoute.id }, 'Route updated');
     res.status(200).json(updatedRoute);
   } catch (err) {
-    logger.error({ err, routeId: req.params.id }, 'Error updating route');
     next(err);
   }
 };
@@ -133,7 +129,6 @@ exports.deleteRoute = async (req, res, next) => {
     logger.info({ routeId: req.params.id }, 'Route deleted');
     res.status(200).json({ message: 'Route deleted successfully' });
   } catch (err) {
-    logger.error({ err, routeId: req.params.id }, 'Error deleting route');
     next(err);
   }
 };
@@ -147,7 +142,6 @@ exports.getBusesOnRoute = async (req, res, next) => {
     const buses = await routeService.getBusesOnRoute(req.params.id);
     res.status(200).json(buses);
   } catch (err) {
-    logger.error({ err, routeId: req.params.id }, 'Error getting buses for route');
     next(err);
   }
 };
@@ -161,7 +155,6 @@ exports.getStopsByRoute = async (req, res, next) => {
     const stops = await routeService.getStopsByRoute(req.params.id);
     res.status(200).json(stops);
   } catch (err) {
-    logger.error({ err, routeId: req.params.id }, 'Error getting buses for route');
     next(err);
   }
 };
@@ -171,7 +164,7 @@ exports.getStopsByRoute = async (req, res, next) => {
  * Route: GET /api/v1/routes/:routeId/stops
  * Access: Public
  */
-exports.getStopsByRoute = async (req, res) => {
+exports.getStopsByRoute = async (req, res, next) => {
   try {
     const { id } = req.params;
 
@@ -179,7 +172,7 @@ exports.getStopsByRoute = async (req, res) => {
 
     return res.status(200).json(stops);
   } catch (error) {
-    res.status(error.statusCode || 500).send(error.message);
+    next(error);
   }
 };
 
@@ -188,7 +181,7 @@ exports.getStopsByRoute = async (req, res) => {
  * Route: GET /api/v1/routes/stops
  * Access: Public
  */
-exports.findRoutesByStops = async (req, res) => {
+exports.findRoutesByStops = async (req, res, next) => {
   try {
     const { stop, origin, destination } = req.query;
     console.log(origin, destination);
@@ -205,6 +198,6 @@ exports.findRoutesByStops = async (req, res) => {
 
     res.status(200).json(routes);
   } catch (error) {
-    res.status(error.statusCode || 500).send(error.message);
+    next(error);
   }
 };

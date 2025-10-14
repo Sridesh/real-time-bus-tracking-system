@@ -17,7 +17,6 @@ class LocationController {
       logger.info('Location Updated for Bus ID: ' + locationData.busId);
       res.status(200).json(location);
     } catch (error) {
-      logger.error(error);
       next(error);
     }
   };
@@ -34,7 +33,6 @@ class LocationController {
       const location = await locationService.getCurrentLocation(busId);
       res.status(200).json(location);
     } catch (error) {
-      logger.error(error);
       next(error);
     }
   };
@@ -56,7 +54,6 @@ class LocationController {
       );
       res.status(200).json(nearbyBuses);
     } catch (error) {
-      logger.error(error);
       next(error);
     }
   };
@@ -71,7 +68,6 @@ class LocationController {
       const locations = await locationService.getAllActiveBusLocations();
       res.status(200).json(locations);
     } catch (error) {
-      logger.error(error);
       next(error);
     }
   };
@@ -87,7 +83,6 @@ class LocationController {
       const arrival = await locationService.estimateArrivalTime(busId, destLat, destLon);
       res.status(200).json(arrival);
     } catch (error) {
-      logger.error(error);
       next(error);
     }
   };
@@ -103,7 +98,6 @@ class LocationController {
       const arrivals = await locationService.estimateArrivalTime(busIds, destLat, destLon);
       res.status(200).json(arrivals);
     } catch (error) {
-      logger.error(error);
       next(error);
     }
   };
