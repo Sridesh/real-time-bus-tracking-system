@@ -53,18 +53,13 @@ const routeSchema = new mongoose.Schema(
       default: [],
       validate: {
         validator: function (stops) {
-          const sequences = stops.map((s) => s.sequence);
+          const sequences = stops.map((s) => `${s.name} - ${s.city}`);
           const uniqueSequences = new Set(sequences);
           return uniqueSequences.size === sequences.length;
         },
-        message: 'Stop sequences must be unique',
+        message: 'Stops must be unique',
       },
     },
-    // fare: {
-    //   type: Number,
-    //   required: [true, 'Fare is required'],
-    //   min: [0, 'Fare cannot be negative'],
-    // },
     operatingDays: {
       type: [String],
       enum: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],
@@ -137,13 +132,6 @@ routeSchema.methods.isOperatingToday = function () {
 };
 
 /**
- * Instance method - Get stop by sequence
- */
-routeSchema.methods.getStopBySequence = function (sequence) {
-  return this.stops.find((stop) => stop.sequence === sequence);
-};
-
-/**
  * Static method - Find routes between cities
  */
 routeSchema.statics.findRoutesBetween = function (origin, destination) {
@@ -163,16 +151,6 @@ routeSchema.statics.findByDistanceRange = function (minDistance, maxDistance) {
     status: 'active',
   });
 };
-
-/**
- * Pre-save middleware - Sort stops by sequence
- */
-routeSchema.pre('save', function (next) {
-  if (this.stops && this.stops.length > 0) {
-    this.stops.sort((a, b) => a.sequence - b.sequence);
-  }
-  next();
-});
 
 const Route = mongoose.model('Route', routeSchema);
 

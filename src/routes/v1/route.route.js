@@ -20,7 +20,6 @@ const routeController = require('../../controllers/route.controller');
  *       required:
  *         - name
  *         - location
- *         - sequence
  *       properties:
  *         name:
  *           type: string
@@ -31,9 +30,6 @@ const routeController = require('../../controllers/route.controller');
  *             type: number
  *           description: [longitude, latitude]
  *           example: [79.8612, 6.9271]
- *         sequence:
- *           type: integer
- *           example: 1
  *
  *     Route:
  *       type: object
