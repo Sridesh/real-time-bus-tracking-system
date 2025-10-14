@@ -76,10 +76,9 @@ class BusService {
    * Update a bus
    * @param {string} busId - Bus ID
    * @param {Object} updateData - Data to update
-   * @param {Object} user - Authenticated user
    * @returns {Promise<Object>} Updated bus
    */
-  async updateBus(busId, updateData, user) {
+  async updateBus(busId, updateData) {
     // Validate ObjectId
     if (!this.isValidObjectId(busId)) {
       throw new ApiError(400, 'Invalid bus ID format');
