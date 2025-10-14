@@ -26,7 +26,7 @@ class OperatorService {
   }
 
   async getOperatorByUserId(userId) {
-    return operatorRepository.findByUserId(userId).populate('totalBuses').populate('activeBuses');
+    return operatorRepository.findByUserId(userId);
   }
 }
 
