@@ -1,5 +1,8 @@
 const express = require('express');
 const stopController = require('../../controllers/stop.controller');
+const authenticate = require('../../middleware/authenticate.middleware');
+const requireRoles = require('../../middleware/rbac.middleware');
+const roles = require('../../utils/roles');
 
 const router = express.Router();
 
@@ -117,7 +120,7 @@ router.get('/', stopController.getAll);
  *       500:
  *         description: Server error
  */
-router.get('/nearby', stopController.findNearby);
+router.get('/nearby', authenticate, stopController.findNearby);
 
 /**
  * @swagger
@@ -188,7 +191,7 @@ router.get('/:stopId', stopController.getById);
  *       500:
  *         description: Server error
  */
-router.post('/', stopController.create);
+router.post('/', authenticate, requireRoles([roles.ADMIN]), stopController.create);
 
 /**
  * @swagger
@@ -211,7 +214,7 @@ router.post('/', stopController.create);
  *       500:
  *         description: Server error
  */
-router.delete('/:stopId', stopController.delete);
+router.delete('/:stopId', authenticate, requireRoles([roles.ADMIN]), stopController.delete);
 
 /**
  * @swagger
@@ -256,6 +259,6 @@ router.delete('/:stopId', stopController.delete);
  *       500:
  *         description: Server error
  */
-router.put('/:stopId', stopController.update);
+router.put('/:stopId', authenticate, requireRoles([roles.ADMIN]), stopController.update);
 
 module.exports = router;

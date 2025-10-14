@@ -1,6 +1,9 @@
 const express = require('express');
 const router = express.Router();
 const routeController = require('../../controllers/route.controller');
+const authenticate = require('../../middleware/authenticate.middleware');
+const requireRoles = require('../../middleware/rbac.middleware');
+const roles = require('../../utils/roles');
 // const validate = require('../middlewares/validate');
 // const { createRouteValidator, updateRouteValidator } = require('./route.validators');
 
@@ -174,7 +177,7 @@ router.get('/', routeController.getAllRoutes);
  * @swagger
  * /routes/stops:
  *   get:
- *     summary: Get all buses assigned to a specific route
+ *     summary: Get all stops in a specific route
  *     tags: [Routes]
  *     parameters:
  *       - in: query
@@ -270,7 +273,7 @@ router.get('/:id/buses', routeController.getBusesOnRoute);
  * @swagger
  * /routes/{id}/stops:
  *   get:
- *     summary: Get all buses assigned to a specific route
+ *     summary: Get all stops in a specific route
  *     tags: [Routes]
  *     parameters:
  *       - in: path
@@ -329,7 +332,7 @@ router.get('/:id/stops', routeController.getStopsByRoute);
  *       400:
  *         description: Invalid input data
  */
-router.post('/', routeController.createRoute);
+router.post('/', authenticate, requireRoles([roles.ADMIN]), routeController.createRoute);
 
 /**
  * @swagger
@@ -360,7 +363,7 @@ router.post('/', routeController.createRoute);
  *       404:
  *         description: Route not found
  */
-router.put('/:id', routeController.updateRoute);
+router.put('/:id', authenticate, requireRoles([roles.ADMIN]), routeController.updateRoute);
 
 /**
  * @swagger
@@ -389,6 +392,6 @@ router.put('/:id', routeController.updateRoute);
  *       404:
  *         description: Route not found
  */
-router.delete('/:id', routeController.deleteRoute);
+router.delete('/:id', authenticate, requireRoles([roles.ADMIN]), routeController.deleteRoute);
 
 module.exports = router;
