@@ -71,11 +71,6 @@ class RouteService {
       throw new ApiError(409, 'Route number already exists');
     }
 
-    // Validate stops sequence (must be unique and sequential)
-    if (routeData.stops && routeData.stops.length > 0) {
-      this.validateStops(routeData.stops);
-    }
-
     // Create route
     const route = await routeRepository.create(routeData);
 
@@ -190,43 +185,30 @@ class RouteService {
     }));
   }
 
+  //TODO
   /**
-   * Validate stops sequence and uniqueness
-   * @param {Array} stops - Array of stops
-   * @throws {ApiError} If validation fails
+   * Get all stops for a route
+   * @param {string} routeId - Route ID
+   * @returns {Promise<Array>} Array of stops
    */
-  validateStops(stops) {
-    if (stops.length < 2) {
-      throw new ApiError(400, 'Route must have at least 2 stops (origin and destination)');
+  async getStopsByRoute(routeId) {
+    if (!this.isValidObjectId(routeId)) {
+      throw new ApiError(400, 'Invalid route ID format');
     }
 
-    // Check for unique sequences
-    const sequences = stops.map((stop) => stop.sequence);
-    const uniqueSequences = new Set(sequences);
+    const route = await routeRepository.findById(routeId);
 
-    if (uniqueSequences.size !== sequences.length) {
-      throw new ApiError(400, 'Stop sequences must be unique');
+    if (!route) {
+      throw new ApiError(404, 'Route not found');
     }
 
-    // Check for sequential order (1, 2, 3, ...)
-    const sortedSequences = [...sequences].sort((a, b) => a - b);
-    for (let i = 0; i < sortedSequences.length; i++) {
-      if (sortedSequences[i] !== i + 1) {
-        throw new ApiError(400, 'Stop sequences must be sequential starting from 1');
-      }
-    }
-
-    // Validate coordinates are in Sri Lanka
-    stops.forEach((stop, index) => {
-      console.log(stop);
-
-      if (!this.isInSriLanka(stop.location.coordinates[0], stop.location.coordinates[1])) {
-        throw new ApiError(
-          400,
-          `Stop ${index + 1} (${stop.name}) coordinates are outside Sri Lanka`
-        );
-      }
-    });
+    return route.stops.map((stop) => ({
+      name: stop.name,
+      city: stop.city,
+      latitude: stop.location.coordinates[1],
+      longitude: stop.location.coordinates[0],
+      estimatedArrival: stop.estimatedArrival || 0,
+    }));
   }
 
   /**
@@ -309,7 +291,7 @@ class RouteService {
       stops: route.stops
         ? route.stops.map((stop) => ({
             name: stop.name,
-            sequence: stop.sequence,
+            city: stop.city,
             latitude: stop.location.coordinates[1], // GeoJSON stores [lng, lat]
             longitude: stop.location.coordinates[0],
             estimatedArrival: stop.estimatedArrival || 0,

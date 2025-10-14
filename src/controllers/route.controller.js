@@ -106,3 +106,20 @@ exports.getBusesOnRoute = async (req, res, next) => {
     next(err);
   }
 };
+
+/**
+ * Get all stops for a route
+ * Route: GET /api/v1/routes/:routeId/stops
+ * Access: Public
+ */
+exports.getStopsByRoute = async (req, res) => {
+  try {
+    const { routeId } = req.params;
+
+    const stops = await routeService.getStopsByRoute(routeId);
+
+    return res.status(200).json(stops);
+  } catch (error) {
+    res.status(error.statusCode || 500).send(error.message);
+  }
+};

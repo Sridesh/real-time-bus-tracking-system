@@ -159,16 +159,6 @@ busSchema.statics.findRunningBuses = function () {
   return this.find({ isRunning: true, status: 'active' });
 };
 
-busSchema.pre('validate', function (next) {
-  console.log('Before validate, routeId:', this.routeId);
-  next();
-});
-
-busSchema.pre('save', async function (next) {
-  console.log(this.routeId);
-  next();
-});
-
 /**
  * Pre-remove middleware - Clean up related location data
  */
