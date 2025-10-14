@@ -7,7 +7,7 @@ class LocationController {
    * Route: POST /api/v1/location
    * Access: Public
    */
-  updateLocation = async (req, res) => {
+  updateLocation = async (req, res, next) => {
     try {
       const user = req.user;
 
@@ -18,7 +18,7 @@ class LocationController {
       res.status(200).json(location);
     } catch (error) {
       logger.error(error);
-      res.status(error.statusCode || 500).send(error.message);
+      next(error);
     }
   };
 
@@ -27,7 +27,7 @@ class LocationController {
    * Route: GET /api/v1/location/:busId
    * Access: Public
    */
-  getLocationByBus = async (req, res) => {
+  getLocationByBus = async (req, res, next) => {
     try {
       const { busId } = req.params;
 
@@ -35,7 +35,7 @@ class LocationController {
       res.status(200).json(location);
     } catch (error) {
       logger.error(error);
-      res.status(error.statusCode || 500).send(error.message);
+      next(error);
     }
   };
 
@@ -44,7 +44,7 @@ class LocationController {
    * Route: POST /api/v1/location/buses-nearby
    * Access: Public
    */
-  getNearbyBuses = async (req, res) => {
+  getNearbyBuses = async (req, res, next) => {
     try {
       const { longitude, latitude, radius, options } = req.body;
 
@@ -57,7 +57,7 @@ class LocationController {
       res.status(200).json(nearbyBuses);
     } catch (error) {
       logger.error(error);
-      res.status(error.statusCode || 500).send(error.message);
+      next(error);
     }
   };
 
@@ -66,13 +66,13 @@ class LocationController {
    * Route: GET /api/v1/location/buses-active
    * Access: Public
    */
-  getAllActiveBusLocations = async (_req, res) => {
+  getAllActiveBusLocations = async (_req, res, next) => {
     try {
       const locations = await locationService.getAllActiveBusLocations();
       res.status(200).json(locations);
     } catch (error) {
       logger.error(error);
-      res.status(error.statusCode || 500).send(error.message);
+      next(error);
     }
   };
 
@@ -81,14 +81,14 @@ class LocationController {
    * Route: GET /api/v1/location/estimated-arrival
    * Access: Public
    */
-  getEstimatedTime = async (req, res) => {
+  getEstimatedTime = async (req, res, next) => {
     try {
       const { busId, destLat, destLon } = req.query;
       const arrival = await locationService.estimateArrivalTime(busId, destLat, destLon);
       res.status(200).json(arrival);
     } catch (error) {
       logger.error(error);
-      res.status(error.statusCode || 500).send(error.message);
+      next(error);
     }
   };
 
@@ -97,14 +97,14 @@ class LocationController {
    * Route: POST /api/v1/location/multiple-arrivals
    * Access: Public
    */
-  getMultipleEstimatedTime = async (req, res) => {
+  getMultipleEstimatedTime = async (req, res, next) => {
     try {
       const { busIds, destLat, destLon } = req.body;
       const arrivals = await locationService.estimateArrivalTime(busIds, destLat, destLon);
       res.status(200).json(arrivals);
     } catch (error) {
       logger.error(error);
-      res.status(error.statusCode || 500).send(error.message);
+      next(error);
     }
   };
 }

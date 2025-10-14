@@ -10,7 +10,7 @@ class BusController {
    * Route: GET /api/v1/buses/:busId
    * Access: Public
    */
-  getBusById = async (req, res) => {
+  getBusById = async (req, res, next) => {
     try {
       const { busId } = req.params;
 
@@ -18,7 +18,7 @@ class BusController {
 
       return res.status(200).json(bus);
     } catch (error) {
-      res.status(error.statusCode || 500).send(error.message);
+      next(error);
     }
   };
 
@@ -27,7 +27,7 @@ class BusController {
    * Route: GET /api/v1/buses
    * Access: Public
    */
-  getAllBuses = async (req, res) => {
+  getAllBuses = async (req, res, next) => {
     try {
       const {
         page,
@@ -63,7 +63,7 @@ class BusController {
 
       res.status(200).json(result);
     } catch (error) {
-      res.status(error.statusCode || 500).send(error);
+      next(error);
     }
   };
 
@@ -72,7 +72,7 @@ class BusController {
    * Route: POST /api/v1/buses
    * Access: Private (Operator/Admin)
    */
-  createBus = async (req, res) => {
+  createBus = async (req, res, next) => {
     try {
       const busData = req.body;
       const user = req.user;
@@ -81,9 +81,7 @@ class BusController {
       logger.info('Bus created');
       return res.status(201).json(bus);
     } catch (error) {
-      logger.error(error);
-
-      res.status(error.statusCode || 500).send(error.message);
+      next(error);
     }
   };
 
@@ -92,7 +90,7 @@ class BusController {
    * Route: PUT /api/v1/buses/:busId
    * Access: Private (Operator/Admin)
    */
-  updateBus = async (req, res) => {
+  updateBus = async (req, res, next) => {
     try {
       const { busId } = req.params;
       const updateData = req.body;
@@ -102,9 +100,7 @@ class BusController {
 
       return res.status(200).json(bus);
     } catch (error) {
-      console.log(error);
-
-      res.status(error.statusCode || 500).send(error);
+      next(error);
     }
   };
 
@@ -113,7 +109,7 @@ class BusController {
    * Route: DELETE /api/v1/buses/:busId
    * Access: Private (Admin only)
    */
-  deleteBus = async (req, res) => {
+  deleteBus = async (req, res, next) => {
     try {
       const { busId } = req.params;
       const user = req.user;
@@ -122,7 +118,7 @@ class BusController {
 
       return res.status(204).send();
     } catch (error) {
-      logger.error(error);
+      next(error);
     }
   };
 }

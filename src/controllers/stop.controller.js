@@ -9,12 +9,12 @@ class StopController {
    * Create a new stop
    * Route: POST /api/v1/stops
    */
-  async create(req, res) {
+  async create(req, res, next) {
     try {
       const result = await stopService.create(req.body);
       res.status(201).json(result);
     } catch (error) {
-      res.status(error.statusCode || 500).json({ message: error.message });
+      next(error);
     }
   }
 
@@ -22,13 +22,13 @@ class StopController {
    * Get all stops (with optional search filter)
    * Route: GET /api/v1/stops?search=colombo
    */
-  async getAll(req, res) {
+  async getAll(req, res, next) {
     try {
       const { search } = req.query;
       const result = await stopService.findAll(search);
       res.status(200).json(result);
     } catch (error) {
-      res.status(error.statusCode || 500).json({ message: error.message });
+      next(error);
     }
   }
 
@@ -36,12 +36,12 @@ class StopController {
    * Get a stop by ID
    * Route: GET /api/v1/stops/:stopId
    */
-  async getById(req, res) {
+  async getById(req, res, next) {
     try {
       const result = await stopService.findById(req.params.stopId);
       res.status(200).json(result);
     } catch (error) {
-      res.status(error.statusCode || 500).json({ message: error.message });
+      next(error);
     }
   }
 
@@ -49,12 +49,12 @@ class StopController {
    * Update a stop
    * Route: PUT /api/v1/stops/:stopId
    */
-  async update(req, res) {
+  async update(req, res, next) {
     try {
       const result = await stopService.update(req.params.stopId, req.body);
       res.status(200).json(result);
     } catch (error) {
-      res.status(error.statusCode || 500).json({ message: error.message });
+      next(error);
     }
   }
 
@@ -62,12 +62,12 @@ class StopController {
    * Delete a stop
    * Route: DELETE /api/v1/stops/:stopId
    */
-  async delete(req, res) {
+  async delete(req, res, next) {
     try {
       const result = await stopService.delete(req.params.stopId);
       res.status(200).json(result);
     } catch (error) {
-      res.status(error.statusCode || 500).json({ message: error.message });
+      next(error);
     }
   }
 
@@ -75,7 +75,7 @@ class StopController {
    * Find nearby stops
    * Route: GET /api/v1/stops/nearby?latitude=6.9271&longitude=79.8612&radius=2
    */
-  async findNearby(req, res) {
+  async findNearby(req, res, next) {
     try {
       const { lat, lon, radius } = req.query;
       const result = await stopService.findNearby(
@@ -85,7 +85,7 @@ class StopController {
       );
       res.status(200).json(result);
     } catch (error) {
-      res.status(error.statusCode || 500).json({ message: error.message });
+      next(error);
     }
   }
 }
