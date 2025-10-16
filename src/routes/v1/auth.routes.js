@@ -2,6 +2,7 @@ const express = require('express');
 
 const authController = require('../../controllers/auth.controller');
 const { authRateLimiter } = require('../../middleware/rateLimiter.middleware');
+const authenticate = require('../../middleware/authenticate.middleware');
 
 const router = express.Router();
 
@@ -128,7 +129,7 @@ router.post('/login', authRateLimiter, authController.login);
  *       401:
  *         description: Could not refresh
  */
-router.post('/refresh', authRateLimiter, authController.refreshToken);
+router.post('/refresh', authRateLimiter, authenticate, authController.refreshToken);
 
 /**
  * @swagger
@@ -160,6 +161,6 @@ router.post('/refresh', authRateLimiter, authController.refreshToken);
  *       500:
  *         description: Logout failed
  */
-router.post('/logout', authController.logout);
+router.post('/logout', authenticate, authController.logout);
 
 module.exports = router;
