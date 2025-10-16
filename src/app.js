@@ -13,32 +13,18 @@ const errorHandler = require('./middleware/errorHandler.middleware');
 
 const app = express();
 
-//trust nginx proxy
 app.set('trust proxy', 1);
 
-// redis
+// Redis
 const connectRedis = async () => {
   await redisService.connect();
 };
 connectRedis();
 
-// middleware
+// Middleware
 app.use(express.json());
-app.use(commonRateLimiter); // rate limiter
-// security headers for HTTP
-app.use(
-  helmet({
-    contentSecurityPolicy: {
-      directives: {
-        defaultSrc: ["'self'"],
-        styleSrc: ["'self'", "'unsafe-inline'"], // For swagger
-        scriptSrc: ["'self'", "'unsafe-inline'"], // For swagger
-        imgSrc: ["'self'", 'data:', 'validator.swagger.io'],
-      },
-    },
-  })
-);
-// CORS
+
+// CORS - More permissive
 const corsOptions = {
   origin: '*',
   credentials: true,
@@ -46,24 +32,70 @@ const corsOptions = {
 };
 app.use(cors(corsOptions));
 
-app.get('/api/v1', (req, res) => {
+app.use((req, res, next) => {
+  if (req.path.startsWith('/docs')) {
+    // avoiding applying helmet to swagger routes
+    return next();
+  }
+
+  // for other routes
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        styleSrc: ["'self'", "'unsafe-inline'"],
+        scriptSrc: ["'self'", "'unsafe-inline'"],
+        imgSrc: ["'self'", 'data:', 'validator.swagger.io'],
+      },
+    },
+  })(req, res, next);
+});
+
+// Rate limiter
+app.use(commonRateLimiter);
+
+// Root
+app.get('/', (req, res) => {
   res.json({
     success: true,
     message: 'Bus Tracking API Server',
     version: '1.0.0',
     documentation: '/docs',
-    apiBase: '/api/v1',
+    apiBase: '/api',
     health: '/api/v1/health',
   });
 });
 
-// swagger docs
-app.use('/docs', swaggerUI.serve, swaggerUI.setup(swaggerSpecs));
+const swaggerOptions = {
+  explorer: true,
+  swaggerOptions: {
+    url: '/docs.json',
+    persistAuthorization: true,
+  },
+  customCss: '.swagger-ui .topbar { display: none }',
+  customSiteTitle: 'Bus Tracking API Documentation',
+};
+
+app.use('/docs', swaggerUI.serve);
+app.get('/docs', swaggerUI.setup(swaggerSpecs, swaggerOptions));
+
+// Serve swagger JSON
+app.get('/docs.json', (req, res) => {
+  res.setHeader('Content-Type', 'application/json');
+  res.send(swaggerSpecs);
+});
 
 // API routes
 app.use('/api', routes);
 
-// Error handler (should be last)
+app.use((req, res, next) => {
+  res.status(404).json({
+    success: false,
+    message: `Cannot ${req.method} ${req.originalUrl}`,
+  });
+});
+
+// Error handler
 app.use(errorHandler);
 
 module.exports = app;
